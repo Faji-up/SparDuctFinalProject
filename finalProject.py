@@ -65,6 +65,9 @@ class Accounts():
         self.age = age
         self.user_product_list = []
         self.product_indx = 0
+        self.transaction_list = []
+
+        self.my_container_of_product =[]
 
         self.date = datetime.now().date()
 
@@ -72,7 +75,7 @@ class Accounts():
         user_frame = LabelFrame(users_frame)
         user_frame.pack(side='left')
 
-        user_image = Label(user_frame, image=self.img)
+        user_image = Label(user_frame, image=self.id_pic)
         user_image.pack()
 
         user_name = Label(user_frame, text=f"Name : {self.name}")
@@ -83,9 +86,6 @@ class Accounts():
 
         user_address = Label(user_frame, text=f"Address : {self.address}")
         user_address.pack()
-
-        user_school = Label(user_frame, text=f"School : {self.school}")
-        user_school.pack()
 
         user_DATE = Label(user_frame, text=f"School : {self.date}")
         user_DATE.pack()
@@ -135,6 +135,7 @@ class Accounts():
         product = Products(sqlite3.Binary(product_img), product_name, product_price, product_stock, seller_contact, user_index, prd_key,
                            self.product_indx)
         product.save()
+
         accounts_list[user_index].user_product_list.append(product)
         prd_key += 1
         print("prd after adding ", prd_key)
@@ -152,6 +153,15 @@ class Accounts():
         for items in self.user_product_list:
             items.unshow()
 
+    def show_user_products(self):
+        global user_index
+        for items in self.user_product_list:
+            if items == None:
+                pass
+            else:
+                items.show_my_product()
+                window.update()
+
     def show_cart(self):
         for key in cart_list.keys():
             if key == user_index:
@@ -163,25 +173,17 @@ class Accounts():
         for key in cart_list.keys():
             cart_list.get(key).pack_forget()
 
-    def show_user_products(self):
-        global user_index
-        for items in self.user_product_list:
-            if items == None:
-                pass
-            else:
-                items.show_my_product()
-                window.update()
 
-    def show_my_transaction(self, name):
-        if name == self.name:
-            for items in accounts_list[user_index].user_product_list:
-                for carts in items.transaction_list:
+
+    def show_my_transaction(self, username,password):
+        if username == self.username and password == self.password:
+            for carts in accounts_list[user_index].transaction_list:
                     carts.pack()
         else:
             pass
 
     def unshow_my_transaction(self):
-        for items in self.user_product_list:
+        for items in accounts_list:
             for carts in items.transaction_list:
                 carts.pack_forget()
 
@@ -243,7 +245,7 @@ class Products(Accounts):
         # transaction frame
         self.transaction_f = Label(user_transaction_frame)
         # trasaction history list
-        self.transaction_list = []
+
 
         self.frame = Frame(user_frame)
         self.label = Label(self.frame, image=self.id_pic)
@@ -264,6 +266,9 @@ class Products(Accounts):
         self.selfindex = product_index
         self.remove_button = Button(self.myproduct_container, text='remove',
                                     command=lambda: self.remove_product())
+        self.my_Pinfo.pack()
+        self.myproduct_image_f.pack()
+        self.remove_button.pack()
 
         # date delivever
         self.time_of_deliver = datetime.now().date().today() + timedelta(days=(int(_time.tm_wday) + 1))
@@ -349,7 +354,6 @@ class Products(Accounts):
             self.my_Pinfo.pack()
             self.myproduct_container.pack()
             self.remove_button.pack()
-
     def wide_view(self, event):
 
         self.buy_button.pack()
@@ -427,14 +431,14 @@ class Products(Accounts):
             # save the transaction
             product_p_t = Label(self.transaction_f, image=self.product_image)
             product_info_t = Label(self.transaction_f,
-                                   text=f"Buyer: {accounts_list[user_index].get_user_name()}\nBuyer address:{accounts_list[user_index].get_user_address()}Product: {self.product_type}\nAmount: {self.product_price}\nQuantity: {quan}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE OF DELIVER:{self.time_of_deliver}")
+                                   text=f"Buyer: {accounts_list[user_index].get_user_name()}\nProduct: {self.product_type}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE OF DELIVER:{self.time_of_deliver}")
             product_p_t.pack()
             product_info_t.pack()
-            self.transaction_list.append(self.transaction_f)
+            accounts_list[self.product_index].transaction_list.append(self.transaction_f)
 
             # send transaction to the admin
-            insert_transaction_to_tb = [self.image_of_product,self.get_user_name(),accounts_list[user_index].get_user_name(),self.product_type,int(payment),self.time_of_deliver,code]
-            tran.executemany("INSERT INTO transactions (product_img,seller_name,buyer_name,product_type,payment_amount,day_of_deliver,transaction_code) VALUES (?,?,?,?,?,?,?)",(insert_transaction_to_tb,))
+            insert_transaction_to_tb = [self.image_of_product,self.get_user_name(),accounts_list[user_index].get_user_name(),self.product_type,int(payment),self.time_of_deliver,code,int(self.product_index)]
+            tran.executemany("INSERT INTO transactions (product_img,seller_name,buyer_name,product_type,payment_amount,day_of_deliver,transaction_code,config_user_id) VALUES (?,?,?,?,?,?,?,?)",(insert_transaction_to_tb,))
             conn2.commit()
             transaction_list.append(
                 str(f"Product:{self.product_type} | Seller:{self.get_user_name()} | Price:{self.product_price} >> Buyer:{accounts_list[user_index].get_user_name()} | Payment:{payment} | TRANSACTION CODE:{code}"))
@@ -673,8 +677,12 @@ def home():
 
     # display user data such as cart,products and transaction hirtory
     for item in accounts_list[user_index].user_product_list:
+        item.show_my_transaction(item.get_username(),item.get_password())
+
+    for item in accounts_list[user_index].user_product_list:
         item.show_user_products()
-        item.show_my_transaction(item.get_user_name())
+
+    accounts_list[user_index].show_user_products()
 
 
 def show_products(event):
@@ -690,6 +698,7 @@ def show_products(event):
     for x in accounts_list[user_index].user_product_list:
         x.product_container.pack()
 
+
     product_frame.pack(expand=True, fill=BOTH)
 
 
@@ -702,18 +711,16 @@ def myproducts(event):
     user_transaction_frame.pack_forget()
     sell_frame.pack_forget()
 
+    for item in accounts_list[user_index].user_product_list:
+        item.show_user_products()
+
     for items in accounts_list:
         if items == accounts_list[user_index] and len(accounts_list[user_index].user_product_list) != 0:
             items.show_user_products()
-            items.show_my_transaction(items.get_user_name())
             window.update()
         else:
             items.unshow_my_products()
-            items.unshow_my_transaction()
-
     user_products_frame.pack(expand=True, fill=BOTH)
-
-
 def mytransaction(event):
     cart_frame.pack_forget()
     profile_frame.pack_forget()
@@ -722,6 +729,10 @@ def mytransaction(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     sell_frame.pack_forget()
+
+    for item in accounts_list[user_index].user_product_list:
+        item.show_my_transaction(item.get_username(),item.get_password())
+
 
     user_transaction_frame.pack(expand=True, fill=BOTH)
 
@@ -794,6 +805,7 @@ def user_log_out(event):
     user_frame.pack_forget()
     for items in accounts_list:
         items.unshow_my_products
+        items.unshow_my_transaction()
     welcome()
 
 
@@ -822,13 +834,18 @@ def restore_db_to_list():
 
     conn = sqlite3.connect("Accounts.db")
     conn2 = sqlite3.connect("Products.db")
+    conn3 = sqlite3.connect("Transaction.db")
+
     c = conn.cursor()
     c2 = conn2.cursor()
+    c3 = conn3.cursor()
     # c2.execute("CREATE TABLE IF NOT EXISTS products (product_img BLOB,product_type text,product_price INTEGER,product_stock INTEGER,product_index INTEGER)")
     c.execute("SELECT * FROM accounts")
     c2.execute("SELECT * FROM products")
-    index = 0
+    c3.execute("SELECT * FROM transactions")
 
+    index = 0
+    #RESTORE ACCOUNTS FROM THE DATABASE ACCOUNTS TO LIST OF ACCOUNTS
     for acc in c.fetchall():
         img = Image.open(io.BytesIO(acc[1]))
         img = img.resize((60, 60))
@@ -838,26 +855,27 @@ def restore_db_to_list():
         print("name user:",accounts_list[index].get_user_name())
         index += 1
     print("account len is ",len(accounts_list))
+    products_restore = c2.fetchall()
+    #RESTORE PRODUCTS FROM DATABASE PRODUCTS TO ITS OWNERS
     for acc_index in range(len(accounts_list)):
         print("len(",acc_index,")")
-        for prod in c2.fetchall():
+        for prod in products_restore:
             print("prod[6]",int(prod[6]),"=",acc_index)
-
-            if prod[6] == acc_index+1:
+            if prod[6] == acc_index:
                 print("prod[6]", int(prod[6]))
                 img = Image.open(io.BytesIO(prod[1]))
                 img = img.resize((60, 60))
                 img = ImageTk.PhotoImage(img)
-
                 product = Products(prod[1], prod[2], prod[3], prod[4], prod[5], acc_index, prod[0], accounts_list[acc_index].product_indx)
                 prd = Label(inven_frame, image=img,
                                           text=f"Seller:{accounts_list[acc_index].get_user_name()} Type:{prod[2]} Price:{prod[3]} Stock:{prod[4]}",
                                           compound="left")
                 prd.image = img
+
                 product_list.append(prd)
                 print(prod[0])
                 accounts_list[acc_index].user_product_list.append(product)
-                print("Name",accounts_list[acc_index].user_product_list[acc_index].get_name())
+
                 accounts_list[acc_index].product_indx += 1
                 print("prd number before", prd_key)
                 if prod[0] > prd_key:
@@ -868,8 +886,27 @@ def restore_db_to_list():
             conn.commit()
     prd_key += 1
     print("prd last ", prd_key)
-    c.close()
-    c2.close()
+
+    #RESTORE TRANSACTION LIST
+    for user_id in range(len(accounts_list)):
+        for _tran in c3.fetchall():
+            if _tran[8] == user_id:
+                transaction_container = LabelFrame(user_transaction_frame)
+                tran_img = Image.open(io.BytesIO(_tran[1]))
+                tran_img = tran_img.resize((40,40))
+                tran_img = ImageTk.PhotoImage(tran_img)
+                product_p_t = Label(transaction_container, image=tran_img)
+                product_p_t.image = tran_img
+                product_info_t = Label(transaction_container,
+                                       text=f"Buyer: {_tran[3]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
+                product_p_t.pack()
+                product_info_t.pack()
+                accounts_list[user_id].transaction_list.append(transaction_container)
+                conn3.commit()
+
+    conn2.close()
+    conn3.close()
+    conn.close()
 
 
 def welcome():
