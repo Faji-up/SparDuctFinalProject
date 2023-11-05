@@ -437,8 +437,8 @@ class Products(Accounts):
             accounts_list[self.product_index].transaction_list.append(self.transaction_f)
 
             # send transaction to the admin
-            insert_transaction_to_tb = [self.image_of_product,self.get_user_name(),accounts_list[user_index].get_user_name(),self.product_type,int(payment),self.time_of_deliver,code,int(self.product_index)]
-            tran.executemany("INSERT INTO transactions (product_img,seller_name,buyer_name,product_type,payment_amount,day_of_deliver,transaction_code,config_user_id) VALUES (?,?,?,?,?,?,?,?)",(insert_transaction_to_tb,))
+            insert_transaction_to_tb = [self.image_of_product,self.get_user_name(),accounts_list[user_index].get_user_name(),self.product_type,int(payment),self.time_of_deliver,code,int(self.product_index),int(user_index)]
+            tran.executemany("INSERT INTO transactions (product_img,seller_name,buyer_name,product_type,payment_amount,day_of_deliver,transaction_code,config_user_id,buyer_index) VALUES (?,?,?,?,?,?,?,?,?)",(insert_transaction_to_tb,))
             conn2.commit()
             transaction_list.append(
                 str(f"Product:{self.product_type} | Seller:{self.get_user_name()} | Price:{self.product_price} >> Buyer:{accounts_list[user_index].get_user_name()} | Payment:{payment} | TRANSACTION CODE:{code}"))
@@ -499,9 +499,7 @@ class Products(Accounts):
     def get_quan(self):
         return self.product_stock
 
-
 ################################################################
-
 def save_product(product_imagee, product_name, product_price, product_quan, seller_contact):
     global product_frame
     global num
@@ -829,6 +827,7 @@ def restore_db_to_list():
     global num
     global prd_key
     global product_list
+    global cart_list
 
     products_list = []
 
@@ -890,6 +889,24 @@ def restore_db_to_list():
     #RESTORE TRANSACTION LIST
     for user_id in range(len(accounts_list)):
         for _tran in c3.fetchall():
+            if _tran[9] == user_id+1:
+                print("9:", _tran[9], "user_id = ", user_id)
+                cart_img = Image.open(io.BytesIO(_tran[1]))
+                cart_img = cart_img.resize((40, 40))
+                cart_img = ImageTk.PhotoImage(cart_img)
+                cart_user_frame = LabelFrame(cart_frame)
+
+                product_p_c = Label(cart_user_frame, image=cart_img)
+                product_p_c.image = cart_img
+                product_info_c = Label(cart_user_frame,
+                                       text=f"Seller: {_tran[2]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
+
+                product_p_c.pack()
+                product_info_c.pack()
+                cart_list.update({_tran[9]: cart_user_frame})
+                conn3.commit()
+
+
             if _tran[8] == user_id:
                 transaction_container = LabelFrame(user_transaction_frame)
                 tran_img = Image.open(io.BytesIO(_tran[1]))
@@ -902,6 +919,7 @@ def restore_db_to_list():
                 product_p_t.pack()
                 product_info_t.pack()
                 accounts_list[user_id].transaction_list.append(transaction_container)
+                print('gwrtygwhg')
                 conn3.commit()
 
     conn2.close()
