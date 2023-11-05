@@ -565,13 +565,13 @@ def save_account(id_pic, name, agee, address, username, password):
 
         img = Image.open(id_pic)
         img = img.resize((60, 60))
-        img = Image.open(img)
+        img = ImageTk.PhotoImage(img)
         account = Accounts(id_pic, name, agee, address, username, password)
         accounts_list.append(account)
         with open(id_pic, 'rb') as image_file:
-            id_pic = image_file.read()
+            id_picture = image_file.read()
             c.execute("INSERT INTO accounts (id_pic,name,age,address,username,password) VALUES (?,?,?,?,?,?)",
-                      (sqlite3.Binary(id_pic), name, agee, address, username, password))
+                      (sqlite3.Binary(id_picture), name, agee, address, username, password))
         conn.commit()
         conn.close()
         sign_in_username.delete(0, END)
