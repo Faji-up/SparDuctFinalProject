@@ -1,4 +1,7 @@
 # IMPORTSs
+
+from tkinter.ttk import *
+
 import io
 from tkinter import messagebox
 from tkinter import *
@@ -18,17 +21,18 @@ import sqlite3
 ################################################################
 
 window = Tk()
-# window.maxsize(500, 600)
-# window.minsize(500, 600)
+window_width = 450
+window_heigth = 600
+window.maxsize(window_width, window_heigth)
+window.minsize(window_width, window_heigth)
 window.title('SPARduct')
 
 accounts_list = []
 ################################################################
 
-tk_font = 'Segoe UI Black'
-window_width = 500
-window_heigth = 600
-bgcolor = "white"
+tk_font = "Microsoft JhengHei UI"
+
+bgcolor = "#eeeeee"
 text_color = "red"
 user_index = 0
 
@@ -432,6 +436,8 @@ class Products(Accounts):
             product_p_t = Label(self.transaction_f, image=self.product_image)
             product_info_t = Label(self.transaction_f,
                                    text=f"Buyer: {accounts_list[user_index].get_user_name()}\nProduct: {self.product_type}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE OF DELIVER:{self.time_of_deliver}")
+            button_paid = Button(self.transaction_f,text="paid",command=lambda : (product_info_t.config(text="paid")))
+            button_paid.pack()
             product_p_t.pack()
             product_info_t.pack()
             accounts_list[self.product_index].transaction_list.append(self.transaction_f)
@@ -801,6 +807,16 @@ def profile(event):
     profile_ADDRES.config(text=accounts_list[user_index].get_user_address())
     profile_AGE.config(text=accounts_list[user_index].get_age())
 
+def change_bg_color():
+    log_in_canvas.itemconfig(switch,image=moon_img)
+    log_in_canvas.config(bg='#414a4c')
+    outline.config(bg="#414a4c")
+    log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_to_light())
+def change_to_light():
+    log_in_canvas.itemconfig(switch, image=sun_img)
+    log_in_canvas.config(bg=bgcolor)
+    outline.config(bg=bgcolor)
+    log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
 
 def user_log_out(event):
     cart_frame.pack_forget()
@@ -905,6 +921,9 @@ def restore_db_to_list():
                 product_p_t.image = tran_img
                 product_info_t = Label(transaction_container,
                                        text=f"Buyer: {_tran[3]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
+                button_paid = Button(transaction_container, text="paid",
+                                     command=lambda: product_info_t.config(text="paid"))
+                button_paid.pack()
                 product_p_t.pack()
                 product_info_t.pack()
                 accounts_list[user_id].transaction_list.append(transaction_container)
@@ -968,7 +987,13 @@ def log_in_validation():
     conn.commit()
     conn.close()
 
+###############################################################
+def write_text(index):
+    if index <= len(tagline):
+        partial_text = tagline[:index]
+        home_canvas.itemconfig(bsu_tagline,text=partial_text)
 
+        home_canvas.after(40,write_text,index+1)
 ################################################################
 def show_log_in_frame():
     sign_in_canvas.pack_forget()
@@ -1467,9 +1492,22 @@ sign_in_b = Image.open('images/signin.png')
 sign_in_b = sign_in_b.resize((60, 20))
 sign_in_b = ImageTk.PhotoImage(sign_in_b)
 
+
+moon_img = Image.open('images/switch (1).png')
+moon_img = moon_img.resize((40, 40))
+moon_img = ImageTk.PhotoImage(moon_img)
+
+
+sun_img = Image.open('images/switch.png')
+sun_img = sun_img.resize((40, 40))
+sun_img = ImageTk.PhotoImage(sun_img)
+
 ######## background
-log_in_canvas.create_image(250, 250, image=bg_img)
+#log_in_canvas.create_image(250, 250, image=bg_img)
 ###########
+switch= log_in_canvas.create_image(25,25,image=sun_img)
+log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_bg_color())
+
 log_in_outline = Frame(log_in_canvas,
                        bg=bgcolor,
                        highlightcolor='black',
@@ -1479,7 +1517,7 @@ log_in_outline = Frame(log_in_canvas,
                        pady=18
                        )
 
-log_in_outline.place(x=60, y=60)
+log_in_outline.place(x=30, y=90)
 ############
 log_in_logo = Label(log_in_outline,
                     image=logo_med,
@@ -1565,28 +1603,50 @@ con = Image.open('images/icons8-log-in-50.png')
 con = ImageTk.PhotoImage(con)
 
 logo_spar = Image.open('images/logo_spar.png')
-logo_spar = logo_spar.resize((340, 380))
+logo_spar = logo_spar.resize((400, 380))
 logo_spar = ImageTk.PhotoImage(logo_spar)
+
+get_start_img = Image.open('images/get_started_button.png')
+get_start_img = get_start_img.resize((190, 130))
+get_start_img = ImageTk.PhotoImage(get_start_img)
+
+
+wel_bg = Image.open('images/Screenshot (26).png')
+wel_bg = wel_bg.resize((700, 700))
+wel_bg = ImageTk.PhotoImage(wel_bg)
+
+
+spar_logo = Image.open('images/spartan.png')
+spar_logo = spar_logo.resize((80, 80))
+spar_logo = ImageTk.PhotoImage(spar_logo)
 #########
 
 home_canvas = Canvas(window, bg=bgcolor)
 
-home_canvas.create_image(250, 250, image=bg_2)
+home_canvas.create_image(110, 250, image=wel_bg)
+#home_canvas.create_image(220,100,image=spar_logo)
 
-home_canvas.create_image(30, 30,
-                         image=logo_small)
-home_canvas.create_image(230, 120, image=logo_spar)
+tagline = f"Leading Ennovations,\n    Transforming Lives"
+bsu_tagline = home_canvas.create_text(180,200,text="",font=("calibre",19,"bold"),fill="black")
+write_text(1)
+home_canvas.create_image(220, 100,
+                         image=logo_big  )
+#home_canvas.create_image(230, 120, image=logo_spar)
 #########
-home_con_button = Button(home_canvas,
-                         image=con,
-                         font=(tk_font, 13, "bold"),
-                         bg='red',
-                         command=show_log_in_frame, relief=GROOVE)
-home_con_button.place(x=220, y=515)
+#home_con_button = Button(home_canvas,
+                      #   image=con,
+                       #  font=(tk_font, 13, "bold"),
+                       #  bg='red',
+                       #  command=show_log_in_frame, relief=GROOVE)
+#home_con_button.place(x=220, y=515)
+get_started_button = home_canvas.create_image(235,499,image=get_start_img)
 
+home_canvas.tag_bind(get_started_button,"<Button>",lambda event: show_log_in_frame())
 ################################################################
 
 if __name__ == '__main__':
+    s = ttk.Style()
+    s.theme_use('clam')
     restore_db_to_list()
     welcome()
 
