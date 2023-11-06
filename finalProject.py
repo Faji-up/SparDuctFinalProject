@@ -271,7 +271,7 @@ class Products(Accounts):
         self.remove_button.pack()
 
         # date delivever
-        self.time_of_deliver = datetime.now().date().today() + timedelta(days=(int(_time.tm_wday) + 1))
+        self.time_of_deliver = datetime.now().date().today() + timedelta(days=(int(_time.tm_wday) + 7))
 
     def save(self):
         global user_index
@@ -426,7 +426,7 @@ class Products(Accounts):
 
             product_p_c.pack()
             product_info_c.pack()
-            cart_list.update({user_index: self.cart_f})
+            cart_list.get(user_index).append(self.cart_f)
 
             # save the transaction
             product_p_t = Label(self.transaction_f, image=self.product_image)
@@ -668,10 +668,12 @@ def user():
 
 
 def home():
+    global cart_list
     log_in_canvas.pack_forget()
     user_frame.pack(fill=BOTH, expand=True)
     for items in range(len(accounts_list)):
         accounts_list[items].show_products()
+
 
     # display user data such as cart,products and transaction hirtory
     for item in accounts_list[user_index].user_product_list:
@@ -701,6 +703,7 @@ def show_products(event):
 
 
 def myproducts(event):
+    global cart_list
     cart_frame.pack_forget()
     profile_frame.pack_forget()
     product_frame.pack_forget()
@@ -708,7 +711,6 @@ def myproducts(event):
     buy_frame.pack_forget()
     user_transaction_frame.pack_forget()
     sell_frame.pack_forget()
-
     for item in accounts_list[user_index].user_product_list:
         item.show_user_products()
 
@@ -774,9 +776,11 @@ def cart(event):
 
     for key in cart_list.keys():
         if key == user_index:
-            cart_list.get(key).pack()
+            for cart in cart_list.get(key):
+                cart.pack()
         else:
-            cart_list.get(key).pack_forget()
+            for cart in cart_list.get(key):
+                cart.pack_forget()
     cart_frame.pack(expand=True, fill=BOTH)
 
 
@@ -841,7 +845,7 @@ def restore_db_to_list():
     # c2.execute("CREATE TABLE IF NOT EXISTS products (product_img BLOB,product_type text,product_price INTEGER,product_stock INTEGER,product_index INTEGER)")
     c.execute("SELECT * FROM accounts")
     c2.execute("SELECT * FROM products")
-    c3.execute("SELECT * FROM transactions")
+
 
     index = 0
     #RESTORE ACCOUNTS FROM THE DATABASE ACCOUNTS TO LIST OF ACCOUNTS
@@ -855,8 +859,10 @@ def restore_db_to_list():
         index += 1
     print("account len is ",len(accounts_list))
     products_restore = c2.fetchall()
+
     #RESTORE PRODUCTS FROM DATABASE PRODUCTS TO ITS OWNERS
     for acc_index in range(len(accounts_list)):
+
         print("len(",acc_index,")")
         for prod in products_restore:
             print("prod[6]",int(prod[6]),"=",acc_index)
@@ -888,25 +894,8 @@ def restore_db_to_list():
 
     #RESTORE TRANSACTION LIST
     for user_id in range(len(accounts_list)):
+        c3.execute("SELECT * FROM transactions")
         for _tran in c3.fetchall():
-            if _tran[9] == user_id+1:
-                print("9:", _tran[9], "user_id = ", user_id)
-                cart_img = Image.open(io.BytesIO(_tran[1]))
-                cart_img = cart_img.resize((40, 40))
-                cart_img = ImageTk.PhotoImage(cart_img)
-                cart_user_frame = LabelFrame(cart_frame)
-
-                product_p_c = Label(cart_user_frame, image=cart_img)
-                product_p_c.image = cart_img
-                product_info_c = Label(cart_user_frame,
-                                       text=f"Seller: {_tran[2]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
-
-                product_p_c.pack()
-                product_info_c.pack()
-                cart_list.update({_tran[9]: cart_user_frame})
-                conn3.commit()
-
-
             if _tran[8] == user_id:
                 transaction_container = LabelFrame(user_transaction_frame)
                 tran_img = Image.open(io.BytesIO(_tran[1]))
@@ -920,7 +909,29 @@ def restore_db_to_list():
                 product_info_t.pack()
                 accounts_list[user_id].transaction_list.append(transaction_container)
                 print('gwrtygwhg')
-                conn3.commit()
+
+    #RESTORE USER CART FROM DB
+    for user_id in range(len(accounts_list)):
+        c3.execute("SELECT * FROM transactions")
+        cart_list.update({user_id:[]})
+        for _tran in c3.fetchall():
+            if _tran[9] == user_id:
+                print("9:", _tran[9], "user_id = ", user_id)
+                cart_img = Image.open(io.BytesIO(_tran[1]))
+                cart_img = cart_img.resize((40, 40))
+                cart_img = ImageTk.PhotoImage(cart_img)
+                cart_user_frame = LabelFrame(cart_frame)
+
+                product_p_c = Label(cart_user_frame, image=cart_img)
+                product_p_c.image = cart_img
+                product_info_c = Label(cart_user_frame,
+                                       text=f"Seller: {_tran[2]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
+
+                product_p_c.pack()
+                product_info_c.pack()
+                cart_list.get(user_id).append(cart_user_frame)
+                print("name",_tran[9])
+
 
     conn2.close()
     conn3.close()
