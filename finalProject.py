@@ -1,7 +1,6 @@
 # IMPORTSs
 
 from tkinter.ttk import *
-
 import io
 from tkinter import messagebox
 from tkinter import *
@@ -49,13 +48,19 @@ transaction_list = []
 
 ################################################################
 def open_id_image():
-    global id_picture
-    id_picture = filedialog.askopenfilename()
+    try:
+        global id_picture
+        id_picture = filedialog.askopenfilename()
+    except Exception as e:
+        messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
 
 
 def upload_image_function():
-    global product_img
-    product_img = filedialog.askopenfilename()
+    try:
+        global product_img
+        product_img = filedialog.askopenfilename()
+    except Exception as e:
+        messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
 
 
 ############ ACCOUNTS
@@ -564,31 +569,32 @@ def save_account(id_pic, name, agee, address, username, password):
     global sign_in_username
     global accounts_list
     global age
+    try:
+        if sign_in_validation(id_pic, name, agee, address, username, password):
+            conn = sqlite3.connect('Accounts.db')
+            c = conn.cursor()
 
-    if sign_in_validation(id_pic, name, agee, address, username, password):
-        conn = sqlite3.connect('Accounts.db')
-        c = conn.cursor()
-
-        img = Image.open(id_pic)
-        img = img.resize((60, 60))
-        img = ImageTk.PhotoImage(img)
-        account = Accounts(id_pic, name, agee, address, username, password)
-        accounts_list.append(account)
-        with open(id_pic, 'rb') as image_file:
-            id_picture = image_file.read()
-            c.execute("INSERT INTO accounts (id_pic,name,age,address,username,password) VALUES (?,?,?,?,?,?)",
-                      (sqlite3.Binary(id_picture), name, agee, address, username, password))
-        conn.commit()
-        conn.close()
-        sign_in_username.delete(0, END)
-        age.delete(0, END)
-        sign_user_address.delete(0, END)
-        sign_in_password.delete(0, END)
-        confirm_pass.delete(0, END)
-        show_log_in_frame()
-    else:
-        show_sign_in_frame()
-
+            img = Image.open(id_pic)
+            img = img.resize((60, 60))
+            img = ImageTk.PhotoImage(img)
+            account = Accounts(id_pic, name, agee, address, username, password)
+            accounts_list.append(account)
+            with open(id_pic, 'rb') as image_file:
+                id_picture = image_file.read()
+                c.execute("INSERT INTO accounts (id_pic,name,age,address,username,password) VALUES (?,?,?,?,?,?)",
+                          (sqlite3.Binary(id_picture), name, agee, address, username, password))
+            conn.commit()
+            conn.close()
+            sign_in_username.delete(0, END)
+            age.delete(0, END)
+            sign_user_address.delete(0, END)
+            sign_in_password.delete(0, END)
+            confirm_pass.delete(0, END)
+            show_log_in_frame()
+        else:
+            show_sign_in_frame()
+    except Exception as e:
+        messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
 
 def sign_in_validation(id_pic, name, age, address, username, password):
     if not (
@@ -603,6 +609,7 @@ def sign_in_validation(id_pic, name, age, address, username, password):
 
 def admin():
     global product_list
+
     log_in_canvas.pack_forget()
     admin_frame.pack(expand=True, fill=BOTH)
 
@@ -742,6 +749,9 @@ def mytransaction(event):
 
     user_transaction_frame.pack(expand=True, fill=BOTH)
 
+def back_to_log_com():
+    sign_in_canvas.pack_forget()
+    log_in_canvas.pack(fill=BOTH,expand=True)
 
 def add_product(event):
     cart_frame.pack_forget()
@@ -811,11 +821,13 @@ def change_bg_color():
     log_in_canvas.itemconfig(switch,image=moon_img)
     log_in_canvas.config(bg='#414a4c')
     outline.config(bg="#414a4c")
+    log_in_outline.config(bg="#414a4c")
     log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_to_light())
 def change_to_light():
     log_in_canvas.itemconfig(switch, image=sun_img)
     log_in_canvas.config(bg=bgcolor)
     outline.config(bg=bgcolor)
+    log_in_outline.config(bg="#eeeeee")
     log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
 
 def user_log_out(event):
@@ -913,6 +925,7 @@ def restore_db_to_list():
         c3.execute("SELECT * FROM transactions")
         for _tran in c3.fetchall():
             if _tran[8] == user_id:
+                print(_tran[8], 'tran' , user_index)
                 transaction_container = LabelFrame(user_transaction_frame)
                 tran_img = Image.open(io.BytesIO(_tran[1]))
                 tran_img = tran_img.resize((40,40))
@@ -936,6 +949,7 @@ def restore_db_to_list():
         for _tran in c3.fetchall():
             if _tran[9] == user_id:
                 print("9:", _tran[9], "user_id = ", user_id)
+
                 cart_img = Image.open(io.BytesIO(_tran[1]))
                 cart_img = cart_img.resize((40, 40))
                 cart_img = ImageTk.PhotoImage(cart_img)
@@ -1348,14 +1362,19 @@ user_transaction_frame = Frame(user_frame, bg='brown')
 
 ########################## SIGN UP WINDOW FRAME
 
-sign_in_canvas = Canvas(window)
+sign_in_canvas = Canvas(window,bg=bgcolor)
 #########
 
-sign_in_canvas.create_image(250, 250, image=bg_img)
+back_to_img = Image.open('images/back-arrow.png')
+back_to_img = back_to_img.resize((30, 30))
+back_to_img = ImageTk.PhotoImage(back_to_img)
 
+#sign_in_canvas.create_image(250, 250, image=bg_img)
+back_to_log = sign_in_canvas.create_image(20,20,image=back_to_img)
+sign_in_canvas.tag_bind(back_to_log,"<Button>",lambda event: back_to_log_com())
 ########
-outline = LabelFrame(sign_in_canvas, bg=bgcolor, padx=100, pady=18)
-outline.place(x=35, y=30)
+outline = LabelFrame(sign_in_canvas, bg=bgcolor, padx=90, pady=18)
+outline.place(x=26, y=60)
 
 #############
 
@@ -1399,8 +1418,8 @@ age_label = Label(outline,
 age_label.pack(anchor=W
                )
 age = Entry(outline,
-            highlightthickness=2,
-            highlightcolor='black',
+           # highlightthickness=2,
+          #  highlightcolor='black',
             width=30,
             font=(tk_font, 9)
             )
@@ -1426,8 +1445,8 @@ suser_name_label.pack(anchor=W)
 
 # sign user username entry
 sign_in_username = Entry(outline,
-                  highlightthickness=2,
-                  highlightcolor='black',
+                 # highlightthickness=2,
+                 # highlightcolor='black',
                   width=30,
                   font=(tk_font, 8))
 sign_in_username.pack(anchor=W)
@@ -1443,8 +1462,8 @@ spass_label.pack(anchor=W)
 
 # sign user password entry
 sign_in_password = Entry(outline,
-                   highlightthickness=2,
-                   highlightcolor='black',
+                  # highlightthickness=2,
+                  # highlightcolor='black',
                    width=30,
                    font=(tk_font, 8),
                    show="*")
@@ -1461,22 +1480,25 @@ confirm_pass_label.pack(anchor=W)
 
 # sign confirm password entry
 confirm_pass = Entry(outline,
-                     highlightthickness=2,
-                     highlightcolor='black',
+                     #highlightthickness=2,
+                    # highlightcolor='black',
                      width=30,
                      font=(tk_font, 8),
                      show="*")
 confirm_pass.pack(anchor=W)
 
 # sign in button
-sign_buttton = Button(outline,
-                      text='Sign in',
-                      bg=text_color,
-                      command=lambda: save_account(id_picture, sign_user_name.get(), age.get(), sign_user_address.get(),
-                                                   sign_in_username.get(), sign_in_password.get()),
-                      font=(tk_font, 10),
-                      width=10)
-sign_buttton.pack()
+try:
+    sign_buttton = Button(outline,
+                          text='Sign in',
+                          bg=text_color,
+                          command=lambda: save_account(id_picture, sign_user_name.get(), age.get(), sign_user_address.get(),
+                                                       sign_in_username.get(), sign_in_password.get()),
+                          font=(tk_font, 10),
+                          width=10)
+    sign_buttton.pack()
+except Exception as e:
+    messagebox.showerror("Sign in error", "May kulang !\n Ayusin mo")
 
 ########################## LOG IN  PRODUCT WINDOW FRAME
 
@@ -1519,6 +1541,7 @@ log_in_outline = Frame(log_in_canvas,
 
 log_in_outline.place(x=30, y=90)
 ############
+#log_in_canvas.create_image(26,50,image=logo_med)
 log_in_logo = Label(log_in_outline,
                     image=logo_med,
                     bg=bgcolor
@@ -1544,11 +1567,10 @@ log_in_username_label = Label(log_in_outline,
                               )
 log_in_username_label.pack()
 log_in_username = Entry(log_in_outline,
-                        highlightthickness=2,
-                        highlightcolor='black',
+                        #highlightthickness=2,
+                        #highlightcolor='black',
                         width=25,
-                        show="*",
-                        font=(tk_font, 9))
+                        font=(tk_font, 9),bg='white')
 log_in_username.pack()
 #########
 
@@ -1560,9 +1582,10 @@ log_in_password_label = Label(log_in_outline,
                               )
 log_in_password_label.pack()
 log_in_password = Entry(log_in_outline,
-                        highlightthickness=2,
-                        highlightcolor='black',
+                       # highlightthickness=2,
+                       # highlightcolor='black',
                         width=25,
+                        show="*",
                         font=(tk_font, 9))
 log_in_password.pack()
 
@@ -1626,10 +1649,10 @@ home_canvas = Canvas(window, bg=bgcolor)
 home_canvas.create_image(110, 250, image=wel_bg)
 #home_canvas.create_image(220,100,image=spar_logo)
 
-tagline = f"Leading Ennovations,\n    Transforming Lives"
-bsu_tagline = home_canvas.create_text(180,200,text="",font=("calibre",19,"bold"),fill="black")
+tagline = f"Leading Ennovations,\n  Transforming Lives"
+bsu_tagline = home_canvas.create_text(230,200,text="",font=("calibre",19,"bold"),fill="black")
 write_text(1)
-home_canvas.create_image(220, 100,
+home_canvas.create_image(226, 100,
                          image=logo_big  )
 #home_canvas.create_image(230, 120, image=logo_spar)
 #########
