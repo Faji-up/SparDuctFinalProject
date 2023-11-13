@@ -29,7 +29,7 @@ window.title('SPARduct')
 accounts_list = []
 ################################################################
 
-tk_font = "Microsoft JhengHei UI"
+tk_font = "Calibre"
 
 bgcolor = "#eeeeee"
 text_color = "red"
@@ -1008,6 +1008,20 @@ def write_text(index):
         home_canvas.itemconfig(bsu_tagline,text=partial_text)
 
         home_canvas.after(40,write_text,index+1)
+
+
+def enter_txt_U(event):
+    pass
+def leave_txt_U(event):
+    pass
+
+def enter_txt_P(event):
+    pass
+
+
+def leave_txt_P(event):
+    pass
+
 ################################################################
 def show_log_in_frame():
     sign_in_canvas.pack_forget()
@@ -1025,6 +1039,23 @@ def show_sign_in_frame():
 
 
 ################################################################
+
+def line_move_to_home(event):
+    line.place(x=window_width-428,y=window_heigth-10)
+
+
+
+def line_move_to_menu(event):
+    line.place(x=window_width - 49, y=window_heigth - 10)
+
+def line_move_to_prof(event):
+    line.place(x=window_width - 138, y=window_heigth - 10)
+
+def line_move_to_search(event):
+    line.place(x=window_width - 338, y=window_heigth - 10)
+
+def line_move_to_cart(event):
+    line.place(x=window_width - 238, y=window_heigth - 1)
 ############ center the window
 center_window(window, window_width, window_heigth)
 ########################## BSU LOGO
@@ -1042,11 +1073,11 @@ logo_small = logo_small.resize((50, 50))
 logo_small = ImageTk.PhotoImage(logo_small)
 
 user_logo = Image.open('images/user.png')
-user_logo = user_logo.resize((20, 20))
+user_logo = user_logo.resize((25, 20))
 user_logo = ImageTk.PhotoImage(user_logo)
 
 search_logo = Image.open('images/search logo.png')
-search_logo = search_logo.resize((20, 20))
+search_logo = search_logo.resize((25, 20))
 search_logo = ImageTk.PhotoImage(search_logo)
 
 menu_logo = Image.open('images/menu-burger.png')
@@ -1054,8 +1085,23 @@ menu_logo = menu_logo.resize((25, 20))
 menu_logo = ImageTk.PhotoImage(menu_logo)
 
 product_logo = Image.open('images/shopping-cart (1).png')
-product_logo = product_logo.resize((20, 20))
+product_logo = product_logo.resize((25, 20))
 product_logo = ImageTk.PhotoImage(product_logo)
+
+
+home_logo = Image.open('images/home.png')
+home_logo = home_logo.resize((25, 20))
+home_logo = ImageTk.PhotoImage(home_logo)
+
+
+sign_outl = Image.open('images/sign-out.png')
+sign_outl = sign_outl.resize((25, 20))
+sign_outl = ImageTk.PhotoImage(sign_outl)
+
+
+line_logo = Image.open('images/line.png')
+line_logo = line_logo.resize((25, 1))
+line_logo = ImageTk.PhotoImage(line_logo)
 
 bg_img = Image.open('images/homebg.jpg')
 bg_img = bg_img.resize((window_width, 700))
@@ -1067,7 +1113,7 @@ bg_2 = ImageTk.PhotoImage(bg_2)
 
 ########################## ADMIN WINDOW
 
-admin_frame = Frame(window)
+admin_frame = Canvas(window)
 ############
 
 admin_label = Label(admin_frame, text="Admin", font=(tk_font, 10), bg=bgcolor)
@@ -1116,25 +1162,59 @@ admin_menu_frame_but.bind('<Button>', admin_menu)
 
 ########################## INVENTORY WINDOW FRAME
 
-inven_frame = Frame(admin_frame, bg='red')
+inven_frame = Canvas(admin_frame, bg='red')
 
 ########################## USERS WINDOW FRAME
 
-users_frame = Frame(admin_frame, bg='blue')
+users_frame = Canvas(admin_frame, bg='blue')
 
 ########################## ADMIN MENU WINDOW FRAME
 
-admin_menu_frame = Frame(admin_frame, bg='green')
+admin_menu_frame = Canvas(admin_frame, bg='green')
 
 ########################### ADMIN TRANSACTION WINDOW FRAME
 
-admin_tran_frame = Frame(admin_frame, bg='black')
-########################## USER WINDOW FRAME
+admin_tran_frame = Canvas(admin_frame, bg='black')
+###################################################################################### USER WINDOW FRAME
 
 
-user_frame = Frame(window, bg=bgcolor)
+user_frame = Canvas(window, bg=bgcolor)
+################################################################
+user_bg_img = Image.open('images/log-in-bg.png')
+user_bg_img = user_bg_img.resize((window_width,window_heigth))
+user_bg_img = ImageTk.PhotoImage(user_bg_img)
 
-##########
+#sign_in_canvas.create_image(250, 250, image=bg_img)
+
+user_frame.create_image(227,300,image=user_bg_img)
+####################################
+
+bottom_bar_img = Image.open('images/bottom-bar.png')
+bottom_bar_img = bottom_bar_img.resize((window_width,40))
+bottom_bar_img = ImageTk.PhotoImage(bottom_bar_img)
+
+user_frame.create_image(227,window_heigth-20,image=bottom_bar_img)
+
+####################################
+
+menu_button_c = user_frame.create_image(window_width-35,window_heigth-21,image=menu_logo)
+user_frame.tag_bind(menu_button_c,"<Enter>",line_move_to_menu)
+
+prof_button_c = user_frame.create_image(window_width-125,window_heigth-21,image=user_logo)
+user_frame.tag_bind(prof_button_c,"<Enter>",line_move_to_prof)
+
+cart_button_c = user_frame.create_image(window_width-225,window_heigth-21,image=product_logo)
+user_frame.tag_bind(cart_button_c,"<Enter>",line_move_to_cart)
+
+search_button_c = user_frame.create_image(window_width-325,window_heigth-21,image=search_logo)
+user_frame.tag_bind(search_button_c,"<Enter>",line_move_to_search)
+
+home_button_c = user_frame.create_image(window_width-415,window_heigth-21,image=home_logo)
+user_frame.tag_bind(home_button_c,"<Enter>",line_move_to_home)
+
+line = Label(user_frame,image=line_logo,bg="black",highlightcolor="black",highlightbackground="black",highlightthickness=0)
+
+####################################
 header = Label(user_frame, bg='red')
 header.pack(fill=X, side=TOP)
 
@@ -1229,7 +1309,7 @@ menu_fame_but.bind('<Button>', menu)
 
 ########################## buy frame
 
-buy_frame = Frame(user_frame)
+buy_frame = Canvas(user_frame)
 label = Label(buy_frame, text='BUY')
 label.pack(side=TOP)
 
@@ -1248,7 +1328,7 @@ buy_button.pack(side=BOTTOM)
 
 ########################## MENU WINDOW FRAME
 
-menu_frame = Frame(user_frame, bg='black')
+menu_frame = Canvas(user_frame, bg='black')
 bg_menu = Label(menu_frame, image=bg_img)
 bg_menu.pack(expand=True, fill=BOTH)
 
@@ -1261,7 +1341,7 @@ log_out.bind('<Button>', user_log_out)
 
 ########################## ADD PRODUCT WINDOW FRAME
 
-sell_frame = Frame(user_frame, bg='yellow')
+sell_frame = Canvas(user_frame, bg='yellow')
 
 upload_image = Button(sell_frame, command=lambda: upload_image_function(), text="Product image")
 upload_image.pack()
@@ -1285,11 +1365,11 @@ upload_product = Button(sell_frame,
 upload_product.pack()
 ########################## CART WINDOW FRAME
 
-cart_frame = Frame(user_frame, bg='red')
+cart_frame = Canvas(user_frame, bg='red')
 
 ########################## PROFILE WINDOW FRAME
 
-profile_frame = Frame(user_frame,
+profile_frame = Canvas(user_frame,
                       bg=bgcolor,
 
                       )
@@ -1351,14 +1431,14 @@ profile_ADDRES.pack()
 
 ########################## PRODUCTS WINDOW FRAME
 
-product_frame = Frame(user_frame, bg='green')
+product_frame = Canvas(user_frame, bg='green')
 
 ########################## USER PRODUCTS WINDOW FRAME
 
-user_products_frame = Frame(user_frame, bg='orange')
+user_products_frame = Canvas(user_frame, bg='orange')
 ########################## USER transaction WINDOW FRAME
 
-user_transaction_frame = Frame(user_frame, bg='brown')
+user_transaction_frame = Canvas(user_frame, bg='brown')
 
 ########################## SIGN UP WINDOW FRAME
 
@@ -1369,7 +1449,18 @@ back_to_img = Image.open('images/back-arrow.png')
 back_to_img = back_to_img.resize((30, 30))
 back_to_img = ImageTk.PhotoImage(back_to_img)
 
+sign_to_img = Image.open('images/sign_button.png')
+sign_to_img = sign_to_img.resize((140, 100))
+sign_to_img = ImageTk.PhotoImage(sign_to_img)
+
+
+sign_bg_img = Image.open('images/log-in-bg.png')
+sign_bg_img = sign_bg_img.resize((window_width,window_heigth))
+sign_bg_img = ImageTk.PhotoImage(sign_bg_img)
+
 #sign_in_canvas.create_image(250, 250, image=bg_img)
+
+sign_in_canvas.create_image(227,300,image=sign_bg_img)
 back_to_log = sign_in_canvas.create_image(20,20,image=back_to_img)
 sign_in_canvas.tag_bind(back_to_log,"<Button>",lambda event: back_to_log_com())
 ########
@@ -1379,132 +1470,143 @@ outline.place(x=26, y=60)
 #############
 
 # logo
-sign_logo = Label(outline, image=logo_med, bg=bgcolor)
-sign_logo.pack()
+sign_in_canvas.create_image(220,50,image=logo_med)
 
 # sign label
-sign_label = Label(outline,
-                   bg=bgcolor,
-                   text='Sign in',
-                   font=(tk_font, 18, 'bold'),
-                   height=2)
-sign_label.pack()
+sign_in_canvas.create_text(220,90,text="Sign in",font=(tk_font,20,"bold"))
 
 # insert user profile
 
-insert_id = Button(outline, text="Upload id",
+insert_id = Button(sign_in_canvas, text="Upload id",
                    bg='red',
                    font=(tk_font, 8),
                    command=lambda: open_id_image())
-insert_id.pack(anchor=W)
+insert_id.place(x=80,y=150)
 
 # sign user full name
-sign_user_name_label = Label(outline,
+sign_user_name_label = Label(sign_in_canvas,
                              text="Name",
                              font=(tk_font, 8),
                              height=1)
-sign_user_name_label.pack(anchor=W)
-sign_user_name = Entry(outline, font=(tk_font, 8))
-sign_user_name.pack(anchor=W)
+sign_user_name_label.place(x=80,y=170)
+sign_user_name = Entry(sign_in_canvas, font=(tk_font, 8),fg="grey")
+sign_user_name.place(x=80,y=190)
 
 # sign user age
-age_label = Label(outline,
+age_label = Label(sign_in_canvas,
                   bg=bgcolor,
                   text="AGE",
                   font=(tk_font, 8),
                   height=1
                   )
 
-age_label.pack(anchor=W
-               )
-age = Entry(outline,
+age_label.place(x=80,y=110)
+age = Entry(sign_in_canvas,
            # highlightthickness=2,
           #  highlightcolor='black',
             width=30,
             font=(tk_font, 9)
             )
-age.pack(anchor=W)
+age.place(x=80,y=130)
 
 # sign address
-sign_user_address_label = Label(outline,
+sign_user_address_label = Label(sign_in_canvas,
                                 text="Address",
                                 font=(tk_font, 8),
                                 height=1)
-sign_user_address_label.pack(anchor=W)
-sign_user_address = Entry(outline, font=(tk_font, 8), width=30)
-sign_user_address.pack(anchor=W)
+sign_user_address_label.place(x=80,y=150)
+sign_user_address = Entry(sign_in_canvas, font=(tk_font, 8), width=30)
+sign_user_address.place(x=80,y=170)
 
 # sign user name
-suser_name_label = Label(outline,
+suser_name_label = Label(sign_in_canvas,
                          text="USERNAME",
                          bg=bgcolor,
                          font=(tk_font, 8),
                          height=1
                          )
-suser_name_label.pack(anchor=W)
+suser_name_label.place(x=80,y=190)
 
 # sign user username entry
-sign_in_username = Entry(outline,
+sign_in_username = Entry(sign_in_canvas,
                  # highlightthickness=2,
                  # highlightcolor='black',
                   width=30,
                   font=(tk_font, 8))
-sign_in_username.pack(anchor=W)
+sign_in_username.place(x=80,y=210)
 
 # sign user password
-spass_label = Label(outline,
+spass_label = Label(sign_in_canvas,
                     text="PASSWORD",
                     bg=bgcolor,
                     font=(tk_font, 8),
                     height=1)
 
-spass_label.pack(anchor=W)
+spass_label.place(x=80,y=230)
 
 # sign user password entry
-sign_in_password = Entry(outline,
+sign_in_password = Entry(sign_in_canvas,
                   # highlightthickness=2,
                   # highlightcolor='black',
                    width=30,
                    font=(tk_font, 8),
                    show="*")
-sign_in_password.pack(anchor=W)
+sign_in_password.place(x=80,y=250)
 
 # confirm pass word label / input
-confirm_pass_label = Label(outline,
+confirm_pass_label = Label(sign_in_canvas,
                            text="CONFIRM PASSWORD",
                            bg=bgcolor,
                            font=(tk_font, 8),
                            height=1
                            )
-confirm_pass_label.pack(anchor=W)
+confirm_pass_label.place(x=80,y=270)
 
 # sign confirm password entry
-confirm_pass = Entry(outline,
+confirm_pass = Entry(sign_in_canvas,
                      #highlightthickness=2,
                     # highlightcolor='black',
                      width=30,
                      font=(tk_font, 8),
                      show="*")
-confirm_pass.pack(anchor=W)
+confirm_pass.place(x=80,y=290)
 
 # sign in button
-try:
-    sign_buttton = Button(outline,
-                          text='Sign in',
-                          bg=text_color,
-                          command=lambda: save_account(id_picture, sign_user_name.get(), age.get(), sign_user_address.get(),
-                                                       sign_in_username.get(), sign_in_password.get()),
-                          font=(tk_font, 10),
-                          width=10)
-    sign_buttton.pack()
-except Exception as e:
-    messagebox.showerror("Sign in error", "May kulang !\n Ayusin mo")
+sign_in_canvas.create_image(230,420,image=sign_to_img)
+#try:    # sign_buttton = Button(outline,
+#bg=text_color,image=sign_to_img,
+#command=lambda: save_account(id_picture, sign_user_name.get(), age.get(), sign_user_address.get(),
+#sign_in_username.get(), sign_in_password.get()),
+         #                 font=(tk_font, 10),
+         #                 width=10)
+#    sign_buttton.pack()
+#except Exception as e:
+ #   messagebox.showerror("Sign in error", "May kulang !\n Ayusin mo")
 
 ########################## LOG IN  PRODUCT WINDOW FRAME
 
 
 log_in_canvas = Canvas(window)
 #########
+
+crt_acc_btn = Image.open('images/crt_acc.png')
+crt_acc_btn = crt_acc_btn.resize((230, 60))
+crt_acc_btn = ImageTk.PhotoImage(crt_acc_btn)
+
+log_outl = Image.open('images/log_out.png')
+log_outl = log_outl.resize((430, 460))
+log_outl = ImageTk.PhotoImage(log_outl)
+
+
+txt_bx = Image.open('images/txt-box.png')
+txt_bx = txt_bx.resize((330, 100))
+txt_bx = ImageTk.PhotoImage(txt_bx)
+
+
+log_btn = Image.open('images/log-in.png')
+log_btn = log_btn.resize((170, 70))
+log_btn = ImageTk.PhotoImage(log_btn)
+
 
 log_in_b = Image.open('images/log in.png')
 log_in_b = log_in_b.resize((60, 20))
@@ -1524,11 +1626,18 @@ sun_img = Image.open('images/switch.png')
 sun_img = sun_img.resize((40, 40))
 sun_img = ImageTk.PhotoImage(sun_img)
 
+
+log_bg_img = Image.open('images/log-in-bg.png')
+log_bg_img = log_bg_img.resize((window_width, window_heigth))
+log_bg_img = ImageTk.PhotoImage(log_bg_img)
+
 ######## background
-#log_in_canvas.create_image(250, 250, image=bg_img)
+log_in_canvas.create_image(223, 300, image=log_bg_img)
 ###########
 switch= log_in_canvas.create_image(25,25,image=sun_img)
+
 log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_bg_color())
+
 
 log_in_outline = Frame(log_in_canvas,
                        bg=bgcolor,
@@ -1538,8 +1647,28 @@ log_in_outline = Frame(log_in_canvas,
                        padx=100,
                        pady=18
                        )
+log_in_canvas.create_image(227,300,image=log_outl)
 
-log_in_outline.place(x=30, y=90)
+log_in_canvas.create_image(220,120,image=logo_med)
+
+log_in_canvas.create_text(220,185,text="Log in",font=("Segoe UI Black",24,"bold"))
+
+txt_boxU = log_in_canvas.create_image(220,260,image=txt_bx)
+txt_boxP = log_in_canvas.create_image(220,310,image=txt_bx)
+
+username_txt = log_in_canvas.create_text(120,285,text="Username",font=("Calibre",8,"bold"))
+log_in_canvas.tag_bind(txt_boxU,"<Enter>",enter_txt_U)
+log_in_canvas.tag_bind(txt_boxU,"<Leave>",leave_txt_U)
+
+password_txt = log_in_canvas.create_text(120,330,text="Password",font=("Calibre",8,"bold"))
+
+log_in_canvas.tag_bind(txt_boxP,"<Enter>",enter_txt_P)
+log_in_canvas.tag_bind(txt_boxP,"<Leave>",leave_txt_P)
+
+log_in_canvas.create_image(225,390,image=log_btn)
+log_in_canvas.create_text(225,430,text="Don't have account?")
+log_in_canvas.create_image(233,470,image=crt_acc_btn)
+#log_in_outline.place(x=30, y=90)
 ############
 #log_in_canvas.create_image(26,50,image=logo_med)
 log_in_logo = Label(log_in_outline,
@@ -1566,12 +1695,13 @@ log_in_username_label = Label(log_in_outline,
                               bg=bgcolor
                               )
 log_in_username_label.pack()
-log_in_username = Entry(log_in_outline,
-                        #highlightthickness=2,
-                        #highlightcolor='black',
+log_in_username = Entry(log_in_canvas,
+                        highlightthickness=0,
+                        highlightcolor='white',
+                        highlightbackground="white",
                         width=25,
-                        font=(tk_font, 9),bg='white')
-log_in_username.pack()
+                        font=(tk_font, 9),bg="white")
+log_in_username.place(x=153,y=275)
 #########
 
 log_in_password_label = Label(log_in_outline,
@@ -1634,7 +1764,7 @@ get_start_img = get_start_img.resize((190, 130))
 get_start_img = ImageTk.PhotoImage(get_start_img)
 
 
-wel_bg = Image.open('images/Screenshot (26).png')
+wel_bg = Image.open('images/new-.png')
 wel_bg = wel_bg.resize((700, 700))
 wel_bg = ImageTk.PhotoImage(wel_bg)
 
@@ -1652,8 +1782,8 @@ home_canvas.create_image(110, 250, image=wel_bg)
 tagline = f"Leading Ennovations,\n  Transforming Lives"
 bsu_tagline = home_canvas.create_text(230,200,text="",font=("calibre",19,"bold"),fill="black")
 write_text(1)
-home_canvas.create_image(226, 100,
-                         image=logo_big  )
+home_canvas.create_image(225, 100,
+                         image=logo_big)
 #home_canvas.create_image(230, 120, image=logo_spar)
 #########
 #home_con_button = Button(home_canvas,
@@ -1662,7 +1792,7 @@ home_canvas.create_image(226, 100,
                        #  bg='red',
                        #  command=show_log_in_frame, relief=GROOVE)
 #home_con_button.place(x=220, y=515)
-get_started_button = home_canvas.create_image(235,499,image=get_start_img)
+get_started_button = home_canvas.create_image(234,499,image=get_start_img)
 
 home_canvas.tag_bind(get_started_button,"<Button>",lambda event: show_log_in_frame())
 ################################################################
