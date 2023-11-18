@@ -48,12 +48,8 @@ transaction_list = []
 
 ################################################################
 def open_id_image():
-    try:
-        global id_picture
-        id_picture = filedialog.askopenfilename()
-    except Exception as e:
-        messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
-
+    global id_picture
+    id_picture = filedialog.askopenfilename()
 
 def upload_image_function():
     try:
@@ -565,24 +561,24 @@ def remove_in_user_product_list(indexx):
 
 #######################  SAVE ACCOUNT
 
-def save_account(id_pic, name, agee, address, username, password):
+def save_account(id_pic, name,address, username, password):
     global sign_in_username
     global accounts_list
     global age
     try:
-        if sign_in_validation(id_pic, name, agee, address, username, password):
+        if sign_in_validation(id_pic, name,address, username, password):
             conn = sqlite3.connect('Accounts.db')
             c = conn.cursor()
 
             img = Image.open(id_pic)
             img = img.resize((60, 60))
             img = ImageTk.PhotoImage(img)
-            account = Accounts(id_pic, name, agee, address, username, password)
+            account = Accounts(id_pic, name, address, username, password)
             accounts_list.append(account)
             with open(id_pic, 'rb') as image_file:
                 id_picture = image_file.read()
                 c.execute("INSERT INTO accounts (id_pic,name,age,address,username,password) VALUES (?,?,?,?,?,?)",
-                          (sqlite3.Binary(id_picture), name, agee, address, username, password))
+                          (sqlite3.Binary(id_picture), name,  address, username, password))
             conn.commit()
             conn.close()
             sign_in_username.delete(0, END)
@@ -596,9 +592,9 @@ def save_account(id_pic, name, agee, address, username, password):
     except Exception as e:
         messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
 
-def sign_in_validation(id_pic, name, age, address, username, password):
+def sign_in_validation(id_pic, name,address, username, password):
     if not (
-            id_pic == None or name == '' or age == '' or address == '' or username == ''):
+            id_pic == None or name == ''  or address == '' or username == ''):
         if password == confirm_pass.get():
             return True
     else:
@@ -820,21 +816,18 @@ def profile(event):
 def change_bg_color():
     log_in_canvas.itemconfig(switch,image=moon_img)
     log_in_canvas.config(bg='#414a4c')
-    outline.config(bg="#414a4c")
-    log_in_outline.config(bg="#414a4c")
+
     log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_to_light())
 def change_to_light():
     log_in_canvas.itemconfig(switch, image=sun_img)
     log_in_canvas.config(bg=bgcolor)
-    outline.config(bg=bgcolor)
-    log_in_outline.config(bg="#eeeeee")
     log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
 
 def user_log_out(event):
     cart_frame.pack_forget()
     user_frame.pack_forget()
     for items in accounts_list:
-        items.unshow_my_products
+        items.unshow_my_products()
         items.unshow_my_transaction()
     welcome()
 
@@ -1010,18 +1003,43 @@ def write_text(index):
         home_canvas.after(40,write_text,index+1)
 
 
-def enter_txt_U(event):
-    pass
-def leave_txt_U(event):
+def enter_txt_U():
+    log_in_canvas.itemconfig(usr_name_line, fill="black",width=1)
+    window.update()
+
+    log_in_canvas.itemconfig(usr_p_line, fill="#F3F2ED", width=1)
+    window.update()
+
+    print('wrht')
+def leave_txt_U():
     pass
 
-def enter_txt_P(event):
-    pass
+def enter_txt_P():
+    log_in_canvas.itemconfig(usr_name_line, fill="#F3F2ED", width=1)
+    window.update()
 
+    log_in_canvas.itemconfig(usr_p_line, fill="black", width=1)
+    window.update()
+################################################################
 
-def leave_txt_P(event):
-    pass
+def show_password():
+    print("aeg")
+    log_in_password.config(show='')
+    log_in_password.show = ""
+    log_in_canvas.itemconfig(pass_btn_config,image=hide_pass_img)
+    log_in_canvas.tag_unbind(pass_btn_config, "<Button>")
+    log_in_canvas.tag_bind(pass_btn_config, "<Button>", lambda event: hide_password())
+    window.update()
 
+################################################################
+
+def hide_password():
+    log_in_password.config(show='*')
+    log_in_password.show = "*"
+    log_in_canvas.itemconfig(pass_btn_config,image=show_pass_img)
+    log_in_canvas.tag_unbind(pass_btn_config, "<Button>")
+    log_in_canvas.tag_bind(pass_btn_config, "<Button>",lambda event: show_password())
+    window.update()
 ################################################################
 def show_log_in_frame():
     sign_in_canvas.pack_forget()
@@ -1110,6 +1128,7 @@ bg_img = ImageTk.PhotoImage(bg_img)
 bg_2 = Image.open('images/bg2.png')
 bg_2 = bg_2.resize((window_width, 700))
 bg_2 = ImageTk.PhotoImage(bg_2)
+
 
 ########################## ADMIN WINDOW
 
@@ -1221,7 +1240,7 @@ header.pack(fill=X, side=TOP)
 top_logo = Label(header, image=logo_small, bg='red')
 top_logo.pack(side='left')
 
-title_text = Label(header, text="SARduct",
+title_text = Label(header, text="SPARducts",
                    bg=text_color,
                    font=('ink free', 12, "bold")
                    )
@@ -1373,10 +1392,16 @@ profile_frame = Canvas(user_frame,
                       bg=bgcolor,
 
                       )
-bg_prof = Label(profile_frame, image=bg_2)
-bg_prof.pack()
 
-profile_outine = Frame(bg_prof,
+prof_background_img = Image.open('images/profbg.jpg')
+prof_background_img = prof_background_img.resize((470,510))
+prof_background_img = ImageTk.PhotoImage(prof_background_img)
+
+profile_frame.create_image(220,256,image=prof_background_img)
+#bg_prof = Label(profile_frame, image=bg_2)
+#bg_prof.pack()
+
+profile_outine = Frame(profile_frame,
                        highlightcolor='black',
                        highlightthickness=1,
                        highlightbackground='black',
@@ -1445,35 +1470,85 @@ user_transaction_frame = Canvas(user_frame, bg='brown')
 sign_in_canvas = Canvas(window,bg=bgcolor)
 #########
 
+
+sign_txt_bx = Image.open('images/txt-box.png')
+sign_txt_bx = sign_txt_bx.resize((300, 70))
+sign_txt_bx = ImageTk.PhotoImage(sign_txt_bx)
+
+sign_img_bx = Image.open('images/txt-box.png')
+sign_img_bx = sign_img_bx.resize((100, 50))
+sign_img_bx = ImageTk.PhotoImage(sign_img_bx)
+
+
 back_to_img = Image.open('images/back-arrow.png')
 back_to_img = back_to_img.resize((30, 30))
 back_to_img = ImageTk.PhotoImage(back_to_img)
 
-sign_to_img = Image.open('images/sign_button.png')
-sign_to_img = sign_to_img.resize((140, 100))
+sign_to_img = Image.open('images/sign-in.png')
+sign_to_img = sign_to_img.resize((160, 80))
 sign_to_img = ImageTk.PhotoImage(sign_to_img)
 
 
-sign_bg_img = Image.open('images/log-in-bg.png')
+sign_bg_img = Image.open('images/new-.jpg')
 sign_bg_img = sign_bg_img.resize((window_width,window_heigth))
 sign_bg_img = ImageTk.PhotoImage(sign_bg_img)
+
+
+sign_out_img = Image.open('images/sign-out.png')
+sign_out_img = sign_out_img.resize((725, 616))
+sign_out_img = ImageTk.PhotoImage(sign_out_img)
 
 #sign_in_canvas.create_image(250, 250, image=bg_img)
 
 sign_in_canvas.create_image(227,300,image=sign_bg_img)
+
 back_to_log = sign_in_canvas.create_image(20,20,image=back_to_img)
-sign_in_canvas.tag_bind(back_to_log,"<Button>",lambda event: back_to_log_com())
+sign_in_canvas.tag_bind(back_to_log,"<Button>",lambda event:back_to_log_com())
 ########
-outline = LabelFrame(sign_in_canvas, bg=bgcolor, padx=90, pady=18)
-outline.place(x=26, y=60)
+
+
+########
+
+#outline = sign_in_canvas.create_image(230,300,image=sign_out_img)
+#############
+
+######## create logo in log in box
+sign_in_canvas.create_image(220,90,image=logo_med)
+
+######## create log in text
+sign_in_canvas.create_text(220,155,text="Sign up",font=("Segoe UI Black",24,"bold"))
+
+######## create username label
+sign_in_canvas.create_text(120,210,text="Name",font=("Calibre",8,"bold"))
+######## create username label
+sign_in_canvas.create_text(130,260,text="Address",font=("Calibre",8,"bold"))
+######## create username label
+sign_in_canvas.create_text(130,310,text="Username",font=("Calibre",8,"bold"))
+######## create username label
+sign_in_canvas.create_text(130,360,text="Password",font=("Calibre",8,"bold"))
+######## create username label
+sign_in_canvas.create_text(155,410,text="Confirm Password",font=("Calibre",8,"bold"))
 
 #############
 
+name_txt_box = sign_in_canvas.create_image(220,220,image=sign_txt_bx)
+
+address_txt_box = sign_in_canvas.create_image(220,270,image=sign_txt_bx)
+
+username_txt_box = sign_in_canvas.create_image(220,320,image=sign_txt_bx)
+
+password_txt_box = sign_in_canvas.create_image(220,370,image=sign_txt_bx)
+
+confirm_txt_box = sign_in_canvas.create_image(220,420,image=sign_txt_bx)
+
+img_box = sign_in_canvas.create_image(220,460,image=sign_img_bx)
+sign_in_canvas.tag_bind(img_box,"<Button>",lambda event: open_id_image())
+############
 # logo
-sign_in_canvas.create_image(220,50,image=logo_med)
+#sign_in_canvas.create_image(220,50,image=logo_med)
 
 # sign label
-sign_in_canvas.create_text(220,90,text="Sign in",font=(tk_font,20,"bold"))
+#sign_in_canvas.create_text(220,90,text="Sign in",font=(tk_font,20,"bold"))
 
 # insert user profile
 
@@ -1481,98 +1556,82 @@ insert_id = Button(sign_in_canvas, text="Upload id",
                    bg='red',
                    font=(tk_font, 8),
                    command=lambda: open_id_image())
-insert_id.place(x=80,y=150)
+#insert_id.place(x=80,y=150)
 
-# sign user full name
-sign_user_name_label = Label(sign_in_canvas,
-                             text="Name",
-                             font=(tk_font, 8),
-                             height=1)
-sign_user_name_label.place(x=80,y=170)
-sign_user_name = Entry(sign_in_canvas, font=(tk_font, 8),fg="grey")
-sign_user_name.place(x=80,y=190)
 
-# sign user age
-age_label = Label(sign_in_canvas,
-                  bg=bgcolor,
-                  text="AGE",
-                  font=(tk_font, 8),
-                  height=1
-                  )
 
-age_label.place(x=80,y=110)
-age = Entry(sign_in_canvas,
-           # highlightthickness=2,
-          #  highlightcolor='black',
-            width=30,
-            font=(tk_font, 9)
-            )
-age.place(x=80,y=130)
 
-# sign address
-sign_user_address_label = Label(sign_in_canvas,
-                                text="Address",
-                                font=(tk_font, 8),
-                                height=1)
-sign_user_address_label.place(x=80,y=150)
-sign_user_address = Entry(sign_in_canvas, font=(tk_font, 8), width=30)
-sign_user_address.place(x=80,y=170)
+######## create name entry
+sign_user_name = Entry(sign_in_canvas,
+                        width=33,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0)
+######## display the name entry
+sign_user_name.place(x=111,y=227)
 
-# sign user name
-suser_name_label = Label(sign_in_canvas,
-                         text="USERNAME",
-                         bg=bgcolor,
-                         font=(tk_font, 8),
-                         height=1
-                         )
-suser_name_label.place(x=80,y=190)
+######## bind the username entry,this binding appear the line inside of entry box if the cursor enter
+#sign_user_name_label.bind("<Enter>",lambda event:enter_txt_U())
 
-# sign user username entry
+######## create line inside of entry box
+usr_name_line_S = sign_in_canvas.create_line(111,246,340,246,fill="black",width=1)
+
+######## bind the username entry,this binding appear the line inside of entry box if the cursor enter
+#sign_user_name_label.bind("<Enter>",lambda event:enter_txt_U())
+
+#create sign address entry
+sign_user_address = Entry(sign_in_canvas,
+                        width=33,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0)
+sign_user_address.place(x=111,y=276)
+
+######## create line inside of entry box
+address_line_S = sign_in_canvas.create_line(111,295,340,295,fill="black",width=1)
+
+######## create sign user username entry
 sign_in_username = Entry(sign_in_canvas,
-                 # highlightthickness=2,
-                 # highlightcolor='black',
-                  width=30,
-                  font=(tk_font, 8))
-sign_in_username.place(x=80,y=210)
+                        width=33,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0)
+sign_in_username.place(x=111,y=327)
 
-# sign user password
-spass_label = Label(sign_in_canvas,
-                    text="PASSWORD",
-                    bg=bgcolor,
-                    font=(tk_font, 8),
-                    height=1)
+######## create line inside of entry box
+username_line_S = sign_in_canvas.create_line(111,346,340,346,fill="black",width=1)
 
-spass_label.place(x=80,y=230)
-
-# sign user password entry
+####### create sign user password entry
 sign_in_password = Entry(sign_in_canvas,
-                  # highlightthickness=2,
-                  # highlightcolor='black',
-                   width=30,
-                   font=(tk_font, 8),
-                   show="*")
-sign_in_password.place(x=80,y=250)
+                        width=33,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0)
+sign_in_password.place(x=111,y=376)
+
+######## create line inside of entry box
+pass_line_S = sign_in_canvas.create_line(111,395,340,395,fill="black",width=1)
 
 # confirm pass word label / input
-confirm_pass_label = Label(sign_in_canvas,
-                           text="CONFIRM PASSWORD",
-                           bg=bgcolor,
-                           font=(tk_font, 8),
-                           height=1
-                           )
-confirm_pass_label.place(x=80,y=270)
 
 # sign confirm password entry
 confirm_pass = Entry(sign_in_canvas,
-                     #highlightthickness=2,
-                    # highlightcolor='black',
-                     width=30,
-                     font=(tk_font, 8),
-                     show="*")
-confirm_pass.place(x=80,y=290)
+                        width=33,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0,
+                        show="*")
+confirm_pass.place(x=111,y=427)
 
-# sign in button
-sign_in_canvas.create_image(230,420,image=sign_to_img)
+######## create line inside of entry box
+confirm_line_S = sign_in_canvas.create_line(111,446,340,446,fill="black",width=1)
+
+
+# create sign in button
+sign_in_button = sign_in_canvas.create_image(230,530,image=sign_to_img)
+sign_in_canvas.tag_bind(sign_in_button,"<Button>",lambda event: save_account(id_picture, sign_user_name.get(),sign_user_address.get(),
+sign_in_username.get(), sign_in_password.get()))
+
 #try:    # sign_buttton = Button(outline,
 #bg=text_color,image=sign_to_img,
 #command=lambda: save_account(id_picture, sign_user_name.get(), age.get(), sign_user_address.get(),
@@ -1583,9 +1642,11 @@ sign_in_canvas.create_image(230,420,image=sign_to_img)
 #except Exception as e:
  #   messagebox.showerror("Sign in error", "May kulang !\n Ayusin mo")
 
+
+
+
 ########################## LOG IN  PRODUCT WINDOW FRAME
-
-
+#create window for log in
 log_in_canvas = Canvas(window)
 #########
 
@@ -1599,7 +1660,7 @@ log_outl = ImageTk.PhotoImage(log_outl)
 
 
 txt_bx = Image.open('images/txt-box.png')
-txt_bx = txt_bx.resize((330, 100))
+txt_bx = txt_bx.resize((300, 70))
 txt_bx = ImageTk.PhotoImage(txt_bx)
 
 
@@ -1627,131 +1688,97 @@ sun_img = sun_img.resize((40, 40))
 sun_img = ImageTk.PhotoImage(sun_img)
 
 
-log_bg_img = Image.open('images/log-in-bg.png')
+log_bg_img = Image.open('images/new-.jpg')
 log_bg_img = log_bg_img.resize((window_width, window_heigth))
 log_bg_img = ImageTk.PhotoImage(log_bg_img)
+
+show_pass_img = Image.open('images/eye2.png')
+show_pass_img = show_pass_img.resize((20, 15))
+show_pass_img = ImageTk.PhotoImage(show_pass_img)
+
+
+hide_pass_img = Image.open('images/eye2.png')
+hide_pass_img = hide_pass_img.resize((20, 15))
+hide_pass_img = ImageTk.PhotoImage(hide_pass_img)
 
 ######## background
 log_in_canvas.create_image(223, 300, image=log_bg_img)
 ###########
+######## password show config
+pass_btn_config = log_in_canvas.create_image(370, 325, image=show_pass_img)
+log_in_canvas.tag_bind(pass_btn_config,"<Button>",lambda event: show_password())
+
+
 switch= log_in_canvas.create_image(25,25,image=sun_img)
 
 log_in_canvas.tag_bind(switch,"<Button>",lambda event: change_bg_color())
 
+######## log in box background
+#log_in_canvas.create_image(227,300,image=log_outl)
 
-log_in_outline = Frame(log_in_canvas,
-                       bg=bgcolor,
-                       highlightcolor='black',
-                       highlightthickness=1,
-                       highlightbackground='black',
-                       padx=100,
-                       pady=18
-                       )
-log_in_canvas.create_image(227,300,image=log_outl)
-
+######## create logo in log in box
 log_in_canvas.create_image(220,120,image=logo_med)
 
+######## create log in text
 log_in_canvas.create_text(220,185,text="Log in",font=("Segoe UI Black",24,"bold"))
 
+######## create entry box
 txt_boxU = log_in_canvas.create_image(220,260,image=txt_bx)
 txt_boxP = log_in_canvas.create_image(220,310,image=txt_bx)
 
-username_txt = log_in_canvas.create_text(120,285,text="Username",font=("Calibre",8,"bold"))
-log_in_canvas.tag_bind(txt_boxU,"<Enter>",enter_txt_U)
-log_in_canvas.tag_bind(txt_boxU,"<Leave>",leave_txt_U)
+######## create username label
+username_txt = log_in_canvas.create_text(130,250,text="Username",font=("Calibre",8,"bold"))
 
-password_txt = log_in_canvas.create_text(120,330,text="Password",font=("Calibre",8,"bold"))
+######## create password label
+password_txt = log_in_canvas.create_text(130,300,text="Password",font=("Calibre",8,"bold"))
 
-log_in_canvas.tag_bind(txt_boxP,"<Enter>",enter_txt_P)
-log_in_canvas.tag_bind(txt_boxP,"<Leave>",leave_txt_P)
+######## create button for log in
+btn_log_in = log_in_canvas.create_image(225,390,image=log_btn)
+log_in_canvas.tag_bind(btn_log_in,"<Button>",lambda event:log_in_validation())
 
-log_in_canvas.create_image(225,390,image=log_btn)
-log_in_canvas.create_text(225,430,text="Don't have account?")
-log_in_canvas.create_image(233,470,image=crt_acc_btn)
-#log_in_outline.place(x=30, y=90)
+######## create button for create account
+log_in_canvas.create_text(225,430,text="Don't have an account?")
+btn_crt_acc = log_in_canvas.create_image(233,470,image=crt_acc_btn)
+log_in_canvas.tag_bind(btn_crt_acc,"<Button>",lambda event:show_sign_in_frame())
+
 ############
-#log_in_canvas.create_image(26,50,image=logo_med)
-log_in_logo = Label(log_in_outline,
-                    image=logo_med,
-                    bg=bgcolor
-                    )
-log_in_logo.pack()
-###########
-log_in = Label(log_in_outline,
-               text='Log in',
-               foreground='black',
-               font=(tk_font, 23),
-               bg=bgcolor
-               )
-log_in.pack()
-###########
-space1 = Label(log_in_outline, bg=bgcolor)
-space1.pack()
-#########
-log_in_username_label = Label(log_in_outline,
-                              text='Username',
-                              foreground='black',
-                              font=(tk_font, 13),
-                              bg=bgcolor
-                              )
-log_in_username_label.pack()
+######## create username entry
 log_in_username = Entry(log_in_canvas,
-                        highlightthickness=0,
-                        highlightcolor='white',
-                        highlightbackground="white",
-                        width=25,
-                        font=(tk_font, 9),bg="white")
-log_in_username.place(x=153,y=275)
-#########
+                        width=33,
 
-log_in_password_label = Label(log_in_outline,
-                              text='Password',
-                              foreground='black',
-                              font=(tk_font, 13),
-                              bg=bgcolor
-                              )
-log_in_password_label.pack()
-log_in_password = Entry(log_in_outline,
-                       # highlightthickness=2,
-                       # highlightcolor='black',
-                        width=25,
+                        font=(tk_font, 10),
+                        bg="#F3F2ED",
+                        bd=0)
+######## display the username entry
+log_in_username.place(x=111,y=267)
+######## create show and hide password button
+######## bind the username entry,this binding appear the line inside of entry box if the cursor enter
+log_in_username.bind("<Enter>",lambda event:enter_txt_U())
+
+######## create line inside of entry box
+usr_name_line = log_in_canvas.create_line(111,286,340,286,fill="#F3F2ED",width=1)
+
+######### create password entry
+log_in_password = Entry(log_in_canvas,
+                        width=33,
                         show="*",
-                        font=(tk_font, 9))
-log_in_password.pack()
+                        bg="#F3F2ED",
+                        font=(tk_font, 10),
+                        bd=0)
 
-##########
-error = Label(log_in_outline, bg=bgcolor, height=2)
-error.pack()
-##########
-log_in_button = Button(log_in_outline,
-                       command=log_in_validation,
-                       text='Log in',
-                       foreground='white',
-                       font=('monosacpe', 10, 'bold'),
-                       bg='red',
-                       highlightbackground='black',
-                       highlightthickness=2,
-                       highlightcolor='black')
-log_in_button.pack()
-#########
-space = Label(log_in_outline, bg=bgcolor)
-space.pack()
-##########
-log_in_create_acc_button = Button(log_in_outline,
-                                  command=show_sign_in_frame,
-                                  text='Sign in',
-                                  foreground='white',
-                                  font=('monosacpe', 10, 'bold'),
-                                  bg='red',
-                                  highlightbackground='black',
-                                  highlightthickness=2,
-                                  highlightcolor='black'
-                                  )
-log_in_create_acc_button.pack()
-#########
-space2 = Label(log_in_outline, bg=bgcolor, height=2)
-space2.pack()
+######## display the password entry
+log_in_password.place(x=111,y=315)
+
+######## create line inside of entry box
+usr_p_line = log_in_canvas.create_line(111,336,340,336,fill="#F3F2ED",width=1)
+
+######## bind the password entry,this binding appear the line inside of entry box if the cursor enter
+log_in_password.bind("<Enter>",lambda event:enter_txt_P())
+
+
+
 ########################## WELCOCME HOME WINDOW FRAME
+
 con = Image.open('images/icons8-log-in-50.png')
 con = ImageTk.PhotoImage(con)
 
@@ -1759,15 +1786,18 @@ logo_spar = Image.open('images/logo_spar.png')
 logo_spar = logo_spar.resize((400, 380))
 logo_spar = ImageTk.PhotoImage(logo_spar)
 
-get_start_img = Image.open('images/get_started_button.png')
-get_start_img = get_start_img.resize((190, 130))
+get_start_img = Image.open('images/getstartedbtn.png')
+get_start_img = get_start_img.resize((120, 60))
 get_start_img = ImageTk.PhotoImage(get_start_img)
 
 
-wel_bg = Image.open('images/new-.png')
+wel_bg = Image.open('images/new-.jpg')
 wel_bg = wel_bg.resize((700, 700))
 wel_bg = ImageTk.PhotoImage(wel_bg)
 
+myLogo = Image.open('images/sa.png')
+myLogo = myLogo.resize((170, 170))
+myLogo = ImageTk.PhotoImage(myLogo)
 
 spar_logo = Image.open('images/spartan.png')
 spar_logo = spar_logo.resize((80, 80))
@@ -1777,13 +1807,14 @@ spar_logo = ImageTk.PhotoImage(spar_logo)
 home_canvas = Canvas(window, bg=bgcolor)
 
 home_canvas.create_image(110, 250, image=wel_bg)
+home_canvas.create_image(230, 220, image=myLogo)
 #home_canvas.create_image(220,100,image=spar_logo)
 
-tagline = f"Leading Ennovations,\n  Transforming Lives"
-bsu_tagline = home_canvas.create_text(230,200,text="",font=("calibre",19,"bold"),fill="black")
+tagline = f"           A  BatState-U shop that\nleads innovation and transform lives"
+bsu_tagline = home_canvas.create_text(230,330,text="",font=("Bahnschrift Light Condensed",17),fill="black")
 write_text(1)
-home_canvas.create_image(225, 100,
-                         image=logo_big)
+home_canvas.create_image(30, 30,
+                         image=logo_small)
 #home_canvas.create_image(230, 120, image=logo_spar)
 #########
 #home_con_button = Button(home_canvas,
@@ -1792,7 +1823,7 @@ home_canvas.create_image(225, 100,
                        #  bg='red',
                        #  command=show_log_in_frame, relief=GROOVE)
 #home_con_button.place(x=220, y=515)
-get_started_button = home_canvas.create_image(234,499,image=get_start_img)
+get_started_button = home_canvas.create_image(225,495,image=get_start_img)
 
 home_canvas.tag_bind(get_started_button,"<Button>",lambda event: show_log_in_frame())
 ################################################################
