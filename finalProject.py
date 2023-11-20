@@ -25,6 +25,7 @@ window_heigth = 600
 window.maxsize(window_width, window_heigth)
 window.minsize(window_width, window_heigth)
 window.title('SPARduct')
+window.overrideredirect(True)
 
 accounts_list = []
 ################################################################
@@ -38,7 +39,7 @@ user_index = 0
 ######################### LISTS
 user_product_listsaction_list = []
 cart_list = {}
-trans_code = "qwertyuiopasdfghjklzxcvbnm1234567890"
+trans_code = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
 num = 0
 date = datetime.now().date()
 _time = time.localtime(time.time())
@@ -46,6 +47,10 @@ prd_key = 0
 product_list = []
 transaction_list = []
 
+
+position = 300
+cart_position = 200
+carts_id = []
 ################################################################
 def open_id_image():
     global id_picture
@@ -58,6 +63,9 @@ def upload_image_function():
     except Exception as e:
         messagebox.showerror("Sign in error","May kulang !\n Ayusin mo")
 
+
+def on_mouse_wheel(event):
+    product_frame.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 ############ ACCOUNTS
 class Accounts():
@@ -226,7 +234,7 @@ class Products(Accounts):
         self.time_posted = time.strftime("%H:%M:%S", self.local_t)
 
         # products frame, labels and buttons
-        self.product_container = LabelFrame(product_frame)
+        self.product_container = LabelFrame(product_frame,width=600,height=300,bg='red')
         self.product_contact_f = Label(self.product_container, text=self.seller_contact)
         self.product_contact_f.text = self.seller_contact
         self.product_quan_f = Label(self.product_container, text=str(self.product_stock))
@@ -243,6 +251,7 @@ class Products(Accounts):
         self.view_profile = Button(self.product_container, text='view', command=self.profile_view)
         # buy button
         self.buy_button = Button(self.product_container, text='add to cart')
+        self.insert_to()
 
         # cart frame
         self.cart_f = LabelFrame(cart_frame)
@@ -314,21 +323,33 @@ class Products(Accounts):
             self.myproduct_container.pack_forget()
 
         else:
-            self.product_image_f.pack()
-            self.product_name_f.pack()
-            self.product_price_f.pack()
-            self.product_quan_f.pack()
-            self.product_contact_f.pack()
-            self.product_dt_f.pack()
-            self.buy_button.config(command=lambda: self._add_tocart())
-            self.product_container.pack()
+            pass
         conn.commit()
         conn.close()
 
     def move(self, event):
         self.product_container.place(x=200, y=self.product_container.winfo_y() + 10)
-        window.update()
 
+        window.update()
+    def insert_to(self):
+        global position
+        self.product_image_f.pack()
+        self.product_name_f.pack()
+        self.product_price_f.pack()
+        self.product_quan_f.pack()
+        self.product_contact_f.pack()
+        self.product_dt_f.pack()
+        self.buy_button.config(command=lambda: self._add_tocart())
+        product_frame.create_window((220, position), window=self.product_container,width=350,height=300)
+
+        self.product_container.bind("<Configure>", lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
+        self.product_container.bind("<MouseWheel>", on_mousewheel_prdcts_F)
+
+        background_of_prod_frame.bind("<Configure>",lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
+        background_of_prod_frame.bind("<MouseWheel>", on_mousewheel_prdcts_F)
+
+        position += 300
+        #self.product_container.config(width=window_width)
     def unshow(self):
         self.product_dt_f.pack_forget()
         self.myproduct_image_f.pack_forget()
@@ -369,7 +390,7 @@ class Products(Accounts):
         self.view_profile.pack_forget()
 
     def _add_tocart(self):
-
+        global cart_position
         global list_p
         global user_index
         product_frame.pack_forget()
@@ -389,6 +410,8 @@ class Products(Accounts):
         buy_button.config(command=lambda: self.transaction_method(new_quan.get()), text="BUY")
 
     def transaction_method(self, new_quan):
+        global carts_id
+        global cart_position
         global trans_code
         conn = sqlite3.connect("Products.db")
         conn2 = sqlite3.connect("Transaction.db")
@@ -432,6 +455,14 @@ class Products(Accounts):
             product_p_c.pack()
             product_info_c.pack()
             cart_list.get(user_index).append(self.cart_f)
+
+            self.cart_f.bind("<Configure>",lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
+            self.cart_f.bind("<MouseWheel>", on_mousewheel_carts_F)
+
+            #add cart to user window
+            cart_id = cart_frame.create_window(225, cart_position, window=self.cart_f, width=window_width, height=200)
+            cart_position += 200
+            carts_id.append(cart_id)
 
             # save the transaction
             product_p_t = Label(self.transaction_f, image=self.product_image)
@@ -678,6 +709,8 @@ def user():
 
 def home():
     global cart_list
+    global cart_position
+    global carts_id
     log_in_canvas.pack_forget()
     user_frame.pack(fill=BOTH, expand=True)
     for items in range(len(accounts_list)):
@@ -693,6 +726,21 @@ def home():
 
     accounts_list[user_index].show_user_products()
 
+    #show carts of user
+    for key in cart_list.keys():
+        if key == user_index:
+            for carts in cart_list.get(key):
+
+                carts.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
+                carts.bind("<MouseWheel>", on_mousewheel_carts_F)
+
+                cart_id = cart_frame.create_window(225,cart_position,window=carts,width=window_width,height=200)
+                cart_position += 200
+                carts_id.append(cart_id)
+
+        else:
+            pass
+    product_frame.pack(expand=True, fill=BOTH)
 
 def show_products(event):
     global products
@@ -704,8 +752,8 @@ def show_products(event):
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
 
-    for x in accounts_list[user_index].user_product_list:
-        x.product_container.pack()
+    #for x in accounts_list[user_index].user_product_list:
+     #   x.product_container.pack()
 
 
     product_frame.pack(expand=True, fill=BOTH)
@@ -748,7 +796,6 @@ def mytransaction(event):
 def back_to_log_com():
     sign_in_canvas.pack_forget()
     log_in_canvas.pack(fill=BOTH,expand=True)
-
 def add_product(event):
     cart_frame.pack_forget()
     profile_frame.pack_forget()
@@ -760,10 +807,8 @@ def add_product(event):
 
     sell_frame.pack(expand=True, fill=BOTH)
 
-
 def remove_product():
     pass
-
 
 def menu(event):
     user_products_frame.pack_forget()
@@ -778,6 +823,7 @@ def menu(event):
 
 
 def cart(event):
+    global cart_position
     sell_frame.pack_forget()
     profile_frame.pack_forget()
     product_frame.pack_forget()
@@ -786,13 +832,6 @@ def cart(event):
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
 
-    for key in cart_list.keys():
-        if key == user_index:
-            for cart in cart_list.get(key):
-                cart.pack()
-        else:
-            for cart in cart_list.get(key):
-                cart.pack_forget()
     cart_frame.pack(expand=True, fill=BOTH)
 
 
@@ -812,6 +851,13 @@ def profile(event):
     profile_NAME.config(text=accounts_list[user_index].get_user_name())
     profile_ADDRES.config(text=accounts_list[user_index].get_user_address())
     profile_AGE.config(text=accounts_list[user_index].get_age())
+#scroll the products
+
+def on_mousewheel_prdcts_F(event):
+    product_frame.yview_scroll(-1 * (event.delta // 120), "units")
+
+def on_mousewheel_carts_F(event):
+    cart_frame.yview_scroll(-1 * (event.delta // 120), "units")
 
 def change_bg_color():
     log_in_canvas.itemconfig(switch,image=moon_img)
@@ -824,11 +870,17 @@ def change_to_light():
     log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
 
 def user_log_out(event):
+    global carts_id
+    global cart_frame
+    global cart_position
     cart_frame.pack_forget()
     user_frame.pack_forget()
+    cart_position = 200
     for items in accounts_list:
         items.unshow_my_products()
         items.unshow_my_transaction()
+    for ids in carts_id:
+        cart_frame.delete(str(ids))
     welcome()
 
 
@@ -1059,21 +1111,24 @@ def show_sign_in_frame():
 ################################################################
 
 def line_move_to_home(event):
-    line.place(x=window_width-428,y=window_heigth-10)
+    line.place(x=window_width-428,y=27)
 
 
 
 def line_move_to_menu(event):
-    line.place(x=window_width - 49, y=window_heigth - 10)
+    line.place(x=window_width - 49, y=27)
 
 def line_move_to_prof(event):
-    line.place(x=window_width - 138, y=window_heigth - 10)
+    line.place(x=window_width - 138, y=27)
 
 def line_move_to_search(event):
-    line.place(x=window_width - 338, y=window_heigth - 10)
+    line.place(x=window_width - 338, y=27)
 
 def line_move_to_cart(event):
-    line.place(x=window_width - 238, y=window_heigth - 1)
+    line.place(x=window_width - 238, y=27)
+
+def search_type():
+    pass
 ############ center the window
 center_window(window, window_width, window_heigth)
 ########################## BSU LOGO
@@ -1198,6 +1253,9 @@ admin_tran_frame = Canvas(admin_frame, bg='black')
 
 
 user_frame = Canvas(window, bg=bgcolor)
+
+bottom_can_bar = Canvas(user_frame,width=window_width,height=35,bg='white')
+bottom_can_bar.pack(side="bottom")
 ################################################################
 user_bg_img = Image.open('images/log-in-bg.png')
 user_bg_img = user_bg_img.resize((window_width,window_heigth))
@@ -1216,116 +1274,33 @@ user_frame.create_image(227,window_heigth-20,image=bottom_bar_img)
 
 ####################################
 
-menu_button_c = user_frame.create_image(window_width-35,window_heigth-21,image=menu_logo)
-user_frame.tag_bind(menu_button_c,"<Enter>",line_move_to_menu)
+menu_button_c = bottom_can_bar.create_image(window_width-35,18,image=menu_logo)
+bottom_can_bar.tag_bind(menu_button_c,"<Enter>",line_move_to_menu)
+bottom_can_bar.tag_bind(menu_button_c,"<Button>",menu)
 
-prof_button_c = user_frame.create_image(window_width-125,window_heigth-21,image=user_logo)
-user_frame.tag_bind(prof_button_c,"<Enter>",line_move_to_prof)
+prof_button_c = bottom_can_bar.create_image(window_width-125,18,image=user_logo)
+bottom_can_bar.tag_bind(prof_button_c,"<Enter>",line_move_to_prof)
+bottom_can_bar.tag_bind(prof_button_c,"<Button>",profile)
 
-cart_button_c = user_frame.create_image(window_width-225,window_heigth-21,image=product_logo)
-user_frame.tag_bind(cart_button_c,"<Enter>",line_move_to_cart)
+cart_button_c = bottom_can_bar.create_image(window_width-225,18,image=product_logo)
+bottom_can_bar.tag_bind(cart_button_c,"<Enter>",line_move_to_cart)
+bottom_can_bar.tag_bind(cart_button_c,"<Button>",cart)
 
-search_button_c = user_frame.create_image(window_width-325,window_heigth-21,image=search_logo)
-user_frame.tag_bind(search_button_c,"<Enter>",line_move_to_search)
+search_button_c = bottom_can_bar.create_image(window_width-325,18,image=search_logo)
+bottom_can_bar.tag_bind(search_button_c,"<Enter>",line_move_to_search)
 
-home_button_c = user_frame.create_image(window_width-415,window_heigth-21,image=home_logo)
-user_frame.tag_bind(home_button_c,"<Enter>",line_move_to_home)
+home_button_c = bottom_can_bar.create_image(window_width-415,18,image=home_logo)
+bottom_can_bar.tag_bind(home_button_c,"<Enter>",line_move_to_home)
+bottom_can_bar.tag_bind(home_button_c,"<Button>",show_products)
 
-line = Label(user_frame,image=line_logo,bg="black",highlightcolor="black",highlightbackground="black",highlightthickness=0)
+line = Label(bottom_can_bar,image=line_logo,bg="black",highlightcolor="black",highlightbackground="black",highlightthickness=0)
 
 ####################################
-header = Label(user_frame, bg='red')
-header.pack(fill=X, side=TOP)
-
-top_logo = Label(header, image=logo_small, bg='red')
-top_logo.pack(side='left')
-
-title_text = Label(header, text="SPARducts",
-                   bg=text_color,
-                   font=('ink free', 12, "bold")
-                   )
-title_text.pack(side='left')
-
-search_button = Button(header,
-                       text="search",
-                       bg='white',
-                       highlightthickness=0,
-                       image=search_logo
-                       # command=lambda: search_product_type(search.get())
-                       )
-
-search_button.pack(side="right")
-search = Entry(header,
-               bg="white")
-
-search.pack(side="right")
 
 ############
 
-user_frames_but = LabelFrame(user_frame,
-                             bg=bgcolor,
-                             highlightcolor='black',
-                             highlightthickness=1,
-                             highlightbackground='black'
-                             )
-user_frames_but.pack(fill=X)
 
 #
-product_frame_but = Label(user_frames_but,
-                          image=product_logo,
-                          width=30
-                          )
-product_frame_but.pack(side='left')
-product_frame_but.bind('<Button>', show_products)
-
-add_frame_but = Label(user_frames_but,
-                      text='Upload',
-                      width=10
-                      )
-
-add_frame_but.pack(side='left')
-add_frame_but.bind('<Button>', add_product)
-
-#
-cart_frame_but = Label(user_frames_but,
-                       text='Cart',
-                       width=10
-                       )
-
-cart_frame_but.pack(side='left')
-cart_frame_but.bind('<Button>', cart)
-#
-myproducts_but = Label(user_frames_but,
-                       text='Myproducts',
-                       width=10
-                       )
-
-myproducts_but.pack(side='left')
-myproducts_but.bind('<Button>', myproducts)
-#
-user_transact_but = Label(user_frames_but,
-                          text='transaction',
-                          width=10
-                          )
-
-user_transact_but.pack(side='left')
-user_transact_but.bind('<Button>', mytransaction)
-#
-profile_frame_but = Label(user_frames_but,
-                          width=30,
-                          image=user_logo
-                          )
-profile_frame_but.pack(side='left')
-profile_frame_but.bind('<Button>', profile)
-
-#
-menu_fame_but = Label(user_frames_but,
-                      image=menu_logo,
-                      width=30
-                      )
-menu_fame_but.pack(side="right")
-menu_fame_but.bind('<Button>', menu)
-
 ########################## buy frame
 
 buy_frame = Canvas(user_frame)
@@ -1384,7 +1359,16 @@ upload_product = Button(sell_frame,
 upload_product.pack()
 ########################## CART WINDOW FRAME
 
-cart_frame = Canvas(user_frame, bg='red')
+cart_frame_bg = Image.open('images/bg_ulit.jpg')
+cart_frame_bg = cart_frame_bg.resize((470,610))
+cart_frame_bg = ImageTk.PhotoImage(cart_frame_bg)
+
+cart_frame = Canvas(user_frame)
+cart_bg = Label(cart_frame, image = cart_frame_bg)
+cart_bg.pack()
+
+cart_bg.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
+cart_bg.bind("<MouseWheel>", on_mousewheel_carts_F)
 
 ########################## PROFILE WINDOW FRAME
 
@@ -1394,7 +1378,7 @@ profile_frame = Canvas(user_frame,
                       )
 
 prof_background_img = Image.open('images/profbg.jpg')
-prof_background_img = prof_background_img.resize((470,510))
+prof_background_img = prof_background_img.resize((470,610))
 prof_background_img = ImageTk.PhotoImage(prof_background_img)
 
 profile_frame.create_image(220,256,image=prof_background_img)
@@ -1455,15 +1439,33 @@ profile_address_L.pack()
 profile_ADDRES.pack()
 
 ########################## PRODUCTS WINDOW FRAME
+product_frame_bg = Image.open('images/bgnanaman.jpg')
+product_frame_bg = product_frame_bg.resize((window_width,window_heigth))
+product_frame_bg = ImageTk.PhotoImage(product_frame_bg)
 
-product_frame = Canvas(user_frame, bg='green')
+product_frame = Canvas(user_frame, scrollregion=(0, 0, 400, 400),)
+# Bind mouse wheel event to the canvas
+#product_frame.bind("<MouseWheel>", on_mouse_wheel)
+
+#product_frame.create_image(220,256 , image = product_frame_bg)
+background_of_prod_frame = Label(product_frame,image=product_frame_bg)
+background_of_prod_frame.pack()
+
+product_frame.bind("<Configure>", lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
+product_frame.bind("<MouseWheel>", on_mousewheel_prdcts_F)
 
 ########################## USER PRODUCTS WINDOW FRAME
 
 user_products_frame = Canvas(user_frame, bg='orange')
 ########################## USER transaction WINDOW FRAME
+user_transaction_frame_bg = Image.open('images/bg_ulit.jpg')
+user_transaction_frame_bg = user_transaction_frame_bg.resize((470,610))
+user_transaction_frame_bg = ImageTk.PhotoImage(user_transaction_frame_bg)
 
-user_transaction_frame = Canvas(user_frame, bg='brown')
+user_transaction_frame = Canvas(user_frame)
+user_transaction_frame.create_image(220,256 , image = user_transaction_frame_bg)
+
+user_transaction_frame = Canvas(user_frame)
 
 ########################## SIGN UP WINDOW FRAME
 
@@ -1827,6 +1829,10 @@ get_started_button = home_canvas.create_image(225,495,image=get_start_img)
 
 home_canvas.tag_bind(get_started_button,"<Button>",lambda event: show_log_in_frame())
 ################################################################
+qt = Label(window,height=10,bg='white')
+qt.pack(side=TOP,fill=X)
+btn_quit = Button(qt,command=lambda : window.quit(),text="X",fg='black',bg='white',font=("monosacpe",10,'bold'),relief=FLAT)
+btn_quit.pack(side='right',anchor=SW)
 
 if __name__ == '__main__':
     s = ttk.Style()
