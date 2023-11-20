@@ -50,6 +50,8 @@ transaction_list = []
 
 position = 300
 cart_position = 200
+search_frame_pos = 200
+search_types_id = []
 carts_id = []
 ################################################################
 def open_id_image():
@@ -326,6 +328,51 @@ class Products(Accounts):
             pass
         conn.commit()
         conn.close()
+    
+    def display_to_search_frame(self):
+        global search_frame_pos
+        # products frame, labels and buttons
+        type_container = LabelFrame(search_frame,width=600,height=300,bg='red')
+        
+        type_contact = Label(type_container, text=self.seller_contact)
+        type_contact.text = self.seller_contact
+        type_contact.pack()
+        
+        type_stock = Label(type_container, text=str(self.product_stock))
+        type_stock.text = str(self.product_stock)
+        type_stock.pack()
+        
+        type_price = Label(type_container, text=self.product_price)
+        type_price.text = self.product_price
+        type_price.pack()
+        
+        type_img = Label(type_container, image=self.product_image)
+        type_img.image = self.product_image
+        type_img.pack()
+        
+        type_type = Label(type_container, text=self.product_type)
+        type_type.pack()
+        
+        type_date = Label(type_container,
+                                  text=f"DATE POSTED: {self.date_posted}\nTIME: {self.time_posted}")
+        type_date.pack()
+        
+        type_container.bind('<Enter>', self.wide_view)
+        type_container.bind('<Leave>', self.small_view)
+        
+        view_profile = Button(type_container, text='view', command=self.profile_view)
+        view_profile.pack()
+        # buy button
+        buy_button = Button(type_container, text='add to cart')
+        buy_button.pack()
+        
+        frame_id = search_frame.create_window((220, search_frame_pos), window=type_container,width=350,height=300)
+        
+        if frame_id in search_types_id:
+            search_frame.delete(frame_id)
+        search_types_id.append(frame_id)
+        
+        search_frame_pos+=300
 
     def move(self, event):
         self.product_container.place(x=200, y=self.product_container.winfo_y() + 10)
@@ -711,6 +758,7 @@ def home():
     global cart_list
     global cart_position
     global carts_id
+    global search_frame_pos
     log_in_canvas.pack_forget()
     user_frame.pack(fill=BOTH, expand=True)
     for items in range(len(accounts_list)):
@@ -741,8 +789,13 @@ def home():
         else:
             pass
     product_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
 
 def show_products(event):
+    global search_frame_pos
     global products
     sell_frame.pack_forget()
     cart_frame.pack_forget()
@@ -751,16 +804,20 @@ def show_products(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
 
     #for x in accounts_list[user_index].user_product_list:
      #   x.product_container.pack()
 
 
     product_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
 
-
-def myproducts(event):
-    global cart_list
+def mysearch(event):
+    global search_frame_pos
     cart_frame.pack_forget()
     profile_frame.pack_forget()
     product_frame.pack_forget()
@@ -768,6 +825,26 @@ def myproducts(event):
     buy_frame.pack_forget()
     user_transaction_frame.pack_forget()
     sell_frame.pack_forget()
+    user_products_frame.pack_forget()
+    
+    search_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
+    
+def myproducts(event):
+    global search_frame_pos
+    global cart_list
+    cart_frame.pack_forget()
+    profile_frame.pack_forget()
+    product_frame.pack_forget()
+    menu_frame.pack_forget()
+    buy_frame.pack_forget()
+    user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
+    sell_frame.pack_forget()
+    
     for item in accounts_list[user_index].user_product_list:
         item.show_user_products()
 
@@ -778,7 +855,13 @@ def myproducts(event):
         else:
             items.unshow_my_products()
     user_products_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
+
 def mytransaction(event):
+    global search_frame_pos
     cart_frame.pack_forget()
     profile_frame.pack_forget()
     product_frame.pack_forget()
@@ -786,17 +869,28 @@ def mytransaction(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     sell_frame.pack_forget()
+    search_frame.pack_forget()
 
     for item in accounts_list[user_index].user_product_list:
         item.show_my_transaction(item.get_username(),item.get_password())
 
 
     user_transaction_frame.pack(expand=True, fill=BOTH)
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
 
 def back_to_log_com():
+    global search_frame_pos
     sign_in_canvas.pack_forget()
     log_in_canvas.pack(fill=BOTH,expand=True)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
+
 def add_product(event):
+    global search_frame_pos
     cart_frame.pack_forget()
     profile_frame.pack_forget()
     product_frame.pack_forget()
@@ -804,13 +898,20 @@ def add_product(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
 
     sell_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
+
 
 def remove_product():
     pass
 
 def menu(event):
+    global search_frame_pos
     user_products_frame.pack_forget()
     cart_frame.pack_forget()
     profile_frame.pack_forget()
@@ -818,11 +919,17 @@ def menu(event):
     sell_frame.pack_forget()
     buy_frame.pack_forget()
     user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
 
     menu_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
 
 
 def cart(event):
+    global search_frame_pos
     global cart_position
     sell_frame.pack_forget()
     profile_frame.pack_forget()
@@ -831,11 +938,17 @@ def cart(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
 
     cart_frame.pack(expand=True, fill=BOTH)
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
 
 
 def profile(event):
+    global search_frame_pos
     global user_index
     global accounts_list
     menu_frame.pack_forget()
@@ -845,12 +958,18 @@ def profile(event):
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
+    search_frame.pack_forget()
 
     profile_frame.pack(expand=True, fill=BOTH)
     profile_pic.config(image=accounts_list[user_index].get_img())
     profile_NAME.config(text=accounts_list[user_index].get_user_name())
     profile_ADDRES.config(text=accounts_list[user_index].get_user_address())
     profile_AGE.config(text=accounts_list[user_index].get_age())
+    
+    for types in search_types_id:
+        search_frame.delete(str(types))
+    search_frame_pos = 200
+
 #scroll the products
 
 def on_mousewheel_prdcts_F(event):
@@ -1019,9 +1138,7 @@ def restore_db_to_list():
 def welcome():
     home_canvas.pack(expand=True, fill=BOTH)
 
-
 ###############################################################
-
 
 ################################################################
 
@@ -1114,7 +1231,6 @@ def line_move_to_home(event):
     line.place(x=window_width-428,y=27)
 
 
-
 def line_move_to_menu(event):
     line.place(x=window_width - 49, y=27)
 
@@ -1127,8 +1243,15 @@ def line_move_to_search(event):
 def line_move_to_cart(event):
     line.place(x=window_width - 238, y=27)
 
+#search method 
 def search_type():
-    pass
+    type = srch_entry.get()
+    for acc in accounts_list:
+        for prds in acc.user_product_list:
+             if type == prds.get_name():
+                 #search_frame.create_window((220, position), window=type_W,width=350,height=300)
+                prds.display_to_search_frame()
+                
 ############ center the window
 center_window(window, window_width, window_heigth)
 ########################## BSU LOGO
@@ -1160,7 +1283,6 @@ menu_logo = ImageTk.PhotoImage(menu_logo)
 product_logo = Image.open('images/shopping-cart (1).png')
 product_logo = product_logo.resize((25, 20))
 product_logo = ImageTk.PhotoImage(product_logo)
-
 
 home_logo = Image.open('images/home.png')
 home_logo = home_logo.resize((25, 20))
@@ -1288,6 +1410,7 @@ bottom_can_bar.tag_bind(cart_button_c,"<Button>",cart)
 
 search_button_c = bottom_can_bar.create_image(window_width-325,18,image=search_logo)
 bottom_can_bar.tag_bind(search_button_c,"<Enter>",line_move_to_search)
+bottom_can_bar.tag_bind(search_button_c,"<Button>",mysearch)
 
 home_button_c = bottom_can_bar.create_image(window_width-415,18,image=home_logo)
 bottom_can_bar.tag_bind(home_button_c,"<Enter>",line_move_to_home)
@@ -1359,7 +1482,7 @@ upload_product = Button(sell_frame,
 upload_product.pack()
 ########################## CART WINDOW FRAME
 
-cart_frame_bg = Image.open('images/bg_ulit.jpg')
+cart_frame_bg = Image.open('images/bgnanaman.jpg')
 cart_frame_bg = cart_frame_bg.resize((470,610))
 cart_frame_bg = ImageTk.PhotoImage(cart_frame_bg)
 
@@ -1369,7 +1492,21 @@ cart_bg.pack()
 
 cart_bg.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
 cart_bg.bind("<MouseWheel>", on_mousewheel_carts_F)
+########################## SEARCH WINDOW FRAME
 
+search_frame_bg = Image.open('images/bgnanaman.jpg')
+search_frame_bg = search_frame_bg.resize((470,610))
+search_frame_bg = ImageTk.PhotoImage(search_frame_bg)
+
+search_frame = Canvas(user_frame,bg='red')
+#search_bg = Label(search_frame, image = search_frame_bg)
+#search_bg.pack()
+
+srch_entry = Entry(search_frame,width=200)
+srch_entry.pack()
+
+srch_btn = Button(search_frame,text="Search",command=search_type)
+srch_btn.pack()
 ########################## PROFILE WINDOW FRAME
 
 profile_frame = Canvas(user_frame,
@@ -1440,7 +1577,7 @@ profile_ADDRES.pack()
 
 ########################## PRODUCTS WINDOW FRAME
 product_frame_bg = Image.open('images/bgnanaman.jpg')
-product_frame_bg = product_frame_bg.resize((window_width,window_heigth))
+product_frame_bg = product_frame_bg.resize((470,610))
 product_frame_bg = ImageTk.PhotoImage(product_frame_bg)
 
 product_frame = Canvas(user_frame, scrollregion=(0, 0, 400, 400),)
