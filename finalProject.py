@@ -19,78 +19,132 @@ import sqlite3
 ###########
 ################################################################
 
+#Create a new window using the Tkinter library.
+#- Set the width of the window to 400 pixels.
+#- Set the height of the window to 600 pixels.
+#- Set the maximum size of the window to the specified width and height.
+#- Set the minimum size of the window to the specified width and height.
+#- Set the title of the window to 'SPARduct'.
+#- Set the window to be displayed without the window manager decorations.
+    
 window = Tk()
-WINDOW_WIDTH = 800
-window_heigth = 600
-window.maxsize(WINDOW_WIDTH, window_heigth)
-window.minsize(WINDOW_WIDTH, window_heigth)
+WINDOW_WIDTH = 400
+WINDOW_HEIGTH = 600
+window.maxsize(WINDOW_WIDTH, WINDOW_HEIGTH)
+window.minsize(WINDOW_WIDTH, WINDOW_HEIGTH)
 window.title('SPARduct')
 window.overrideredirect(True)
+#window.wm_attributes("-transparentcolor", "#deb887")
 
 accounts_list = []
 ################################################################
 
+#The variable `tk_font` is set to the string "Calibre". This is likely used to specify the font to be used in a Tkinter application.
 tk_font = "Calibre"
-
 bgcolor = "#eeeeee"
 text_color = "red"
 user_index = 0
 
 ######################### LISTS
-user_product_listsaction_list = []
-cart_list = {}
+user_product_listsaction_list = [] #Create an empty list to store user product lists.
 trans_code = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
 num = 0
 date = datetime.now().date()
-_time = time.localtime(time.time())
+_time = time.localtime(time.time()) #Get the current local time and store it in the variable `_time`.
 prd_key = 0
 product_list = []
 transaction_list = []
 
-position = 300
+position = 200
 cart_position = 200
 search_frame_pos = 200
 search_types_id = []
 carts_id = []
-x_position = 125
-
+gap_val = (WINDOW_WIDTH-340)//3
+gap_val+=20
+x_position = gap_val + 20  #Calculate the x position by adding the value of `gap_val` to 20.
 
 ################################################################
+def size_check():
+    """
+    Check the size of the window and update the global variable `WINDOW_WIDTH` with the new width.
+    
+    """
+    global WINDOW_WIDTH
+    width = window.winfo_width()
+    WINDOW_WIDTH = width
+    window.update()
+
+
 def open_id_image():
+    """
+    Open a file dialog to allow the user to select an image file for identification purposes.
+    global id_picture - the path of the selected image file
+    """
     global id_picture
     id_picture = filedialog.askopenfilename()
 
 
 def upload_image_function():
+    """
+    This function allows the user to upload an image file. It opens a file dialog to select the image file and stores the file path in the global variable `product_img`.
+    
+    """
     try:
         global product_img
         product_img = filedialog.askopenfilename()
     except Exception as e:
         messagebox.showerror("Sign in error", "May kulang !\n Ayusin mo")
 
-
+   
 def on_mouse_wheel(event):
+    """
+    This function is called when a mouse wheel event occurs. It scrolls the view of a product frame by a certain number of units based on the direction and magnitude of the mouse wheel movement.
+    event - the mouse wheel event
+    
+    """
     product_frame.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 
 ############ ACCOUNTS
 class Accounts():
-    def __init__(self, id_pic, name, age, address, username, password):
+    """
+    A class representing user accounts.
+    """
+    def __init__(self, id_pic, name,address, username, password):
+        """
+        Initialize a user object with the given attributes.
+        id_pic - the ID picture of the user
+        name - the name of the user
+        address - the address of the user
+        username - the username of the user
+        password - the password of the user
+        None
+        """
         self.username = username
         self.password = password
         self.name = name
         self.address = address
         self.id_pic = id_pic
-        self.age = age
         self.user_product_list = []
         self.product_indx = 0
         self.transaction_list = []
 
         self.my_container_of_product = []
 
-        self.date = datetime.now().date()
+        self.date = datetime.now().date() #create current date
+        
+        self.mytransaction_frame = Canvas(user_transaction_frame,width=WINDOW_WIDTH,
+                                          height=WINDOW_HEIGTH) #frame for user transaction
+        self.my_products_frame = Canvas(product_frame, width=WINDOW_WIDTH,
+                                          height=WINDOW_HEIGTH)  # frame for user transaction
+        self.my_cart_frame = Canvas(cart_frame, width=WINDOW_WIDTH,
+                                          height=WINDOW_HEIGTH)  # frame for user transaction
 
     def show_info(self):
+        """
+        Display information about a user in a graphical user interface.
+        """
         user_frame = LabelFrame(users_frame)
         user_frame.pack(side='left')
 
@@ -100,15 +154,13 @@ class Accounts():
         user_name = Label(user_frame, text=f"Name : {self.name}")
         user_name.pack()
 
-        user_age = Label(user_frame, text=f"Age : {self.age}")
-        user_age.pack()
-
         user_address = Label(user_frame, text=f"Address : {self.address}")
         user_address.pack()
 
         user_DATE = Label(user_frame, text=f"School : {self.date}")
         user_DATE.pack()
-
+        
+    # Getter methods to retrieve specific user details
     def get_img(self):
         return self.id_pic
 
@@ -117,9 +169,6 @@ class Accounts():
 
     def get_user_name(self):
         return self.name
-
-    def get_age(self):
-        return self.age
 
     def get_user_address(self):
         return self.address
@@ -132,8 +181,17 @@ class Accounts():
 
     def get_id(self):
         return self.id_pic
-
+    ##########
     def add_product(self, product_img, product_name, product_price, product_stock, seller_contact):
+        """
+        Add a new product to the database.
+        product_img - the image of the product
+        product_name - the name of the product
+        product_price - the price of the product
+        product_stock - the stock of the product
+        seller_contact - the contact information of the seller
+        
+        """
         global prd_key
         global user_index
         conn = sqlite3.connect("Products.db")
@@ -156,24 +214,25 @@ class Accounts():
                            self.product_indx)
         product.save()
 
-        accounts_list[user_index].user_product_list.append(product)
+        current_user().user_product_list.append(product)
         prd_key += 1
         print("prd after adding ", prd_key)
         window.update()
         self.product_indx += 1
 
-    def show_products(self):
-        for items in self.user_product_list:
-            if items == None:
-                pass
-            else:
-                items.show()
-
     def unshow_my_products(self):
+        """
+        Hide all products in the user's product list.
+        self - the instance of the class
+        """
         for items in self.user_product_list:
             items.unshow()
 
     def show_user_products(self):
+        """
+        Display the products owned by the user.
+       
+        """
         global user_index
         for items in self.user_product_list:
             if items == None:
@@ -183,51 +242,67 @@ class Accounts():
                 window.update()
 
     def show_cart(self):
-        for key in cart_list.keys():
-            if key == user_index:
-                cart_list.get(key).pack()
-            else:
-                cart_list.get(key).pack_forget()
+        """
+        Display the cart for the current user and hide the carts for other users.
+        """
+        pass
 
     def unshow_cart(self):
-        for key in cart_list.keys():
-            cart_list.get(key).pack_forget()
-
-    def show_my_transaction(self, username, password):
-        if username == self.username and password == self.password:
-            for carts in accounts_list[user_index].transaction_list:
-                carts.pack()
-        else:
-            pass
-
-    def unshow_my_transaction(self):
-        for items in accounts_list:
-            for carts in items.transaction_list:
-                carts.pack_forget()
+        """
+        Hide the cart items from the screen by using the `pack_forget()` method on each item in the `cart_list`.
+        """
+        pass
+    def show_my_transaction(self):
+        """
+        Display the "mytransaction_frame" widget on the screen.
+        """
+        self.mytransaction_frame.pack(fill=BOTH)
 
 
 class Products(Accounts):
-    def __init__(self, image_of_product, product_type, product_price, product_stock, seller_contact, product_index,
-                 id_num,
+    """
+    This code defines a class named "Products" that inherits from a class named "Accounts".
+    """
+    def __init__(self, image_of_product, product_type, product_price, product_stock, seller_contact, product_index,id_num,
                  prd_indx):
+        #Initialize an instance of a product with the given attributes.
+        #image_of_product - the image of the product
+        #product_type - the type of the product
+        #product_price - the price of the product
+        #product_stock - the stock of the product
+        #seller_contact - the contact information of the seller
+        #product_index - the index of the product
+        #id_num - the identification number of the product
+        #prd_indx - the index of the product (same as product_index)
+        #return None
+                 
+        self.product_quan_f = None
         global user_index
-        global position_y
+       # global position_y
         global date
         global product_img
         global window
         global con_bg_img
-        super().__init__(accounts_list[user_index].get_id(),
-                         accounts_list[user_index].get_user_name(),
-                         accounts_list[user_index].get_age(),
-                         accounts_list[user_index].get_user_address(),
-                         accounts_list[user_index].get_username(),
-                         accounts_list[user_index].get_password())
+        
+        #Initialize a new object of the current class by calling the superclass's constructor with the following parameters:
+        super().__init__(current_user().get_id(),# - The ID obtained from the `accounts_list` at the index `user_index`.
+                         current_user().get_user_name(),# - The user name obtained from the `accounts_list` at the index `user_index`.
+                         current_user().get_user_address(),#- The user address obtained from the `accounts_list` at the index `user_index`.
+                         current_user().get_username(),#  - The username obtained from the `accounts_list` at the index `user_index`.
+                         current_user().get_password())#  - The password obtained from the `accounts_list` at the index `user_index`.
+        
+        ###### quantinty value
+        self.new_quan = StringVar()
         # products components
         self.prd_indx = prd_indx
-        convert_to_img = Image.open(io.BytesIO(image_of_product))
-        covert_to_img = convert_to_img.resize((130, 130))
-        convert_to_img = ImageTk.PhotoImage(covert_to_img)
+        self.covert_to_img = Image.open(io.BytesIO(image_of_product))
+        self.covert_to_img = self.covert_to_img.resize((130, 130))
+        convert_to_img = ImageTk.PhotoImage(self.covert_to_img)
 
+        #image for buy frame
+        self.img = self.covert_to_img.resize((250,250))
+        self.img = ImageTk.PhotoImage(self.img)
+        
         self.product_image = convert_to_img
         self.image_of_product = image_of_product
         self.id_num = id_num
@@ -242,35 +317,51 @@ class Products(Accounts):
         self.date_posted = datetime.now().date()
         self.time_posted = time.strftime("%H:%M:%S", self.local_t)
 
-        ############################################################################# products frame, labels and buttons
-        self.product_container = Canvas(product_frame, width=600, height=300, bg='#f3f3f3')
-
-        self.product_container.create_image(100, 100, image=con_bg_img)  # display container image
-        # self.product_container.create_image(100,80,image=self.product_image)
-        product_image = Label(self.product_container, image=self.product_image, highlightthickness=2,
+        #============================================================ products frame, labels and buttons
+        gap_value = 0
+        self.product_frame = None
+        self.product_container = Canvas(product_frame,  bg='#f3f3f3', scrollregion=(0, 0, 400, 400),)
+        self.product_bg_image = None
+        self.product_bg_image = self.product_container.create_image(85, 85, image=con_bg_img)  # display container image
+        self.product_image_con = Label(self.product_container, image=self.product_image, highlightthickness=2,
                               highlightcolor="black", highlightbackground='black')
-        product_image.place(x=30, y=10)
-
-        self.insert_to()
-        ################################################################################################################
+        self.product_image_con.place(x=20, y=15) #display product image
+        self.price_txt = None
+        #============================================================ hOVER
+        self.hover_label = Canvas(self.product_container)
+        buy_btn = self.hover_label.create_image(85,140,image=buy_img)
+        self.price_txt = self.hover_label.create_text(85,85,text=f"Price: PHP {self.product_price}",font=("Arial Black",9,"bold"),fill="black")
+        self.hover_label.tag_bind(buy_btn,'<Button>',lambda event:self._add_tocart())
+        self.product_container.bind('<Enter>',lambda event:self.hover_product())
+        self.product_container.bind('<Leave>',lambda event:self.unhover_product())
+        #============================================================
+        self.insert_to() #insert to database Products
+        #============================================================
         # cart frame
-        self.cart_f = LabelFrame(cart_frame)
+        self.cart_f = Frame(current_user().my_cart_frame)
 
         # transaction frame
-        self.transaction_f = Label(user_transaction_frame)
+        self.transaction_f = Label(accounts_list[self.product_index].mytransaction_frame)
         # trasaction history list
+        #============================================================ create seller profile frame
+        self.frame = Canvas(user_frame)
+        #self.label = Label(self.frame, image=self.id_pic)
+        self.con = Canvas(self.frame,highlightbackground="black",highlightcolor="black",highlightthickness=2,bd=1,width=280,height=350)
+        self.con.create_image(200,280,image=wel_bg)
+        self.con.create_image(140,100,image=self.id_pic)
+        self.back_to_btn = self.frame.create_image(20,20,image=back_to_img)
+        self.frame.tag_bind(self.back_to_btn,"<Button>",lambda event: self.profile_unview()) #back button
+        self.con.create_text(140,210,font=("monoscape",20,"bold"),text=f"{self.get_user_name()}")
+        self.con.create_text(170,240,font=("monoscape",15,"bold"),text=f"{self.get_user_address()}")
+        self.con.place(x=60,y=100)
+        #self.button_exit_prof = Button(self.frame, command=self.profile_unview, text="X")
 
-        self.frame = Frame(user_frame)
-        self.label = Label(self.frame, image=self.id_pic)
-
-        self.button_exit_prof = Button(self.frame, command=self.profile_unview, text="X")
-
-        self.info_label = Label(self.frame,
-                                text=f"Name:{self.get_user_name()}\nAge:{self.get_age()}\nAddress:{self.get_user_address()}")
-        self.label.pack()
-        self.info_label.pack()
-        self.button_exit_prof.pack()
-
+        #self.info_label = Label(self.frame,
+         #                       text=f"Name:{self.get_user_name()}\nAge:{self.get_age()}\nAddress:{self.get_user_address()}")
+        #self.label.pack()
+        #self.info_label.pack()
+        #self.button_exit_prof.pack()
+        #============================================================
         # myproducts frame
         self.myproduct_container = LabelFrame(user_products_frame)
         self.myproduct_image_f = Label(self.myproduct_container, image=self.product_image)
@@ -285,8 +376,25 @@ class Products(Accounts):
 
         # date delivever
         self.time_of_deliver = datetime.now().date().today() + timedelta(days=(int(_time.tm_wday) + 7))
-
+        
+    def hover_product(self): #show this when enter the cursor to the products container
+        """
+        Create a hover effect for a product container.
+        """
+        self.crt_hover_bg = self.product_container.create_window(85,85,window=self.hover_label,width=170,height=170)
+        self.product_container.config(highlightbackground="black",highlightcolor="black",highlightthickness=1,bd=1)
+         
+    def unhover_product(self): #Leave the cursor from the product
+        """
+        Remove the hover effect from a product container.
+        """
+        self.product_container.delete(self.crt_hover_bg)
+        self.product_container.config(highlightbackground="black",highlightcolor="black",highlightthickness=0,bd=0)
+        
     def save(self):
+        """
+        Save the current product information to a SQLite database.
+        """
         global user_index
         global product_img
         conn = sqlite3.connect("Products.db")
@@ -302,22 +410,29 @@ class Products(Accounts):
         conn.close()
 
     def get_index(self):
+        """
+        Return the product index of an object.
+        """
         return self.product_index
 
     def show(self):
+        """
+        Display the product information and handle key events.
+        """
         global product_frame
         product_frame.bind("<Key>", self.move)
         index = user_index
         conn = sqlite3.connect("Products.db")
         c = conn.cursor()
         if self.product_stock <= 0:
+            """
+            Check if the product stock is less than or equal to zero. If so, delete the product from the database, update the UI to indicate that the product is sold out, disable the buy button, and hide the product container. If the product stock is greater than zero, do nothing.
+            """
             delete = f"DElETE FROM products WHERE id={self.id_num}"
             c.execute(delete)
             conn.commit()
             conn.close()
-            self.product_quan_f.config(text='sold out')
             self.my_Pinfo.config(text=f"SOLD OUT")
-            self.buy_button.config(state=DISABLED)
             self.product_container.pack_forget()
             self.myproduct_container.pack_forget()
 
@@ -327,6 +442,9 @@ class Products(Accounts):
         conn.close()
 
     def display_to_search_frame(self):
+        """
+        This method is used to display information about a product in a search frame.
+        """
         global search_frame_pos
         # products frame, labels and buttons
         type_container = LabelFrame(search_frame, width=600, height=300, bg='red')
@@ -354,9 +472,6 @@ class Products(Accounts):
                           text=f"DATE POSTED: {self.date_posted}\nTIME: {self.time_posted}")
         type_date.pack()
 
-        type_container.bind('<Enter>', self.wide_view)
-        type_container.bind('<Leave>', self.small_view)
-
         view_profile = Button(type_container, text='view', command=self.profile_view)
         view_profile.pack()
         # buy button
@@ -364,7 +479,8 @@ class Products(Accounts):
         buy_button.pack()
 
         frame_id = search_frame.create_window((220, search_frame_pos), window=type_container, width=350, height=300)
-
+       
+        #Check if the `frame_id` is already present in the `search_types_id` list. If it is, remove it using the `delete()` method of the `search_frame` object. Then, add the `frame_id` to the `search_types_id` list. Finally, increment the `search_frame_pos` variable by 300.
         if frame_id in search_types_id:
             search_frame.delete(frame_id)
         search_types_id.append(frame_id)
@@ -372,48 +488,69 @@ class Products(Accounts):
         search_frame_pos += 300
 
     def move(self, event):
+        """
+        Move the product container widget by changing its x and y coordinates.
+        event - the event that triggered the move
+        """
         self.product_container.place(x=200, y=self.product_container.winfo_y() + 10)
-
         window.update()
 
     def insert_to(self):
+        """
+        This method is used to insert a product frame into a container. It sets the position and size of the product frame, binds events for scrolling, and updates the position variables for the next insertion.
+        """
         global x_position
         global position
-        product_frame.create_window((x_position, position), window=self.product_container, width=200, height=200)
+        global con_bg_img
+        global gap_val
+       
+        self.product_frame = product_frame.create_window((x_position, position), window=self.product_container, width=170, height=170)
 
         # create binding function for background
         background_of_prod_frame.bind("<Configure>",
-                                      lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
-        background_of_prod_frame.bind("<MouseWheel>", on_mousewheel_prdcts_F)
+                                      lambda e: self.product_container.configure(scrollregion=self.product_container.bbox("all")))
+        background_of_prod_frame.bind("<MouseWheel>", self.on_mousewheel_prdcts_F)
         # create binding function for product container
         self.product_container.bind("<Configure>",
-                                    lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
-        self.product_container.bind("<MouseWheel>", on_mousewheel_prdcts_F)
+                                    lambda e: self.product_container.configure(scrollregion=self.product_container.bbox("all")))
+        self.product_container.bind("<MouseWheel>", self.on_mousewheel_prdcts_F)
         self.product_container.bind_all("<Configure>",
-                                        lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
-        self.product_container.bind_all("<MouseWheel>", on_mousewheel_prdcts_F)
+                                        lambda e: self.product_container.configure(scrollregion=self.product_container.bbox("all")))
+        self.product_container.bind_all("<MouseWheel>", self.on_mousewheel_prdcts_F)
 
-        if x_position == 330:
+        if x_position == x_position:
             print("eatwyr")
-            x_position = 125
-            position += 205
+            x_position = 60
+            position += 175
         else:
-            x_position += 205
+            x_position += (con_bg_img.width +gap_val-20)
         # self.product_container.config(width=WINDOW_WIDTH)
+    def on_mousewheel_prdcts_F(self,event):
+        """
+        This function is an event handler for the mousewheel event in a product frame. It scrolls the view of the product frame based on the delta value of the event.
+        """
+        product_frame.yview_scroll(-1 * (event.delta // 120), "units")
 
     def unshow(self):
-        self.product_dt_f.pack_forget()
+        """
+        Hide the product image, product information, product container, and remove button from the user interface.
+        """
         self.myproduct_image_f.pack_forget()
         self.my_Pinfo.pack_forget()
         self.myproduct_container.pack_forget()
         self.remove_button.pack_forget()
 
     def unpack(self):
+        """
+        Hide the product container and the myproduct container by removing them from the display.
+        """
         self.product_container.pack_forget()
         self.myproduct_container.pack_forget()
 
     def show_my_product(self):
-
+        """
+        Display the product information and image on the screen. If the product is out of stock, remove it from the database and disable the buy button. Otherwise, display the product image, information, and remove button.
+        """
         if self.product_stock <= 0:
             conn = sqlite3.connect("Products.db")
             c = conn.cursor()
@@ -421,9 +558,7 @@ class Products(Accounts):
             c.execute(delete)
             conn.commit()
             conn.close()
-            self.product_quan_f.config(text='sold out')
             self.my_Pinfo.config(text=f"SOLD OUT")
-            self.buy_button.config(state=DISABLED)
             conn.commit()
             conn.close()
         else:
@@ -432,36 +567,53 @@ class Products(Accounts):
             self.myproduct_container.pack()
             self.remove_button.pack()
 
-    def wide_view(self, event):
-
-        self.buy_button.pack()
-        self.view_profile.pack()
-
-    def small_view(self, event):
-        self.buy_button.pack_forget()
-        self.view_profile.pack_forget()
-
     def _add_tocart(self):
+        """
+        This method is used to add a product to the user's shopping cart. It updates the GUI to display the product information and allows the user to select the quantity and payment method for the transaction.
+        """
         global cart_position
-        global list_p
+        #global list_p
         global user_index
-        product_frame.pack_forget()
-        cart_frame.pack_forget()
-        product_frame.pack_forget()
-        menu_frame.pack_forget()
+        unpack_all_frame_in_userframe()
 
-        buy_frame.pack()
+        buy_frame.place(x=10,y=10)
+        
+        buy_frame.itemconfig(product_info_BF,text=f"\nPrice: PHP{self.product_price}\nType: {self.product_type}\nStock: {self.product_stock}")
+        product_picture.config(image=self.img)
+        buy_frame.itemconfig(payment_txt,text=f"Payment: 0")
+        buy_frame.tag_bind(view_profile_button,"<Button>",lambda event:self.profile_view())
+        #amount.config(text=str('PHP' + str(self.product_price)))
+        quan_menu.config(textvariable=self.new_quan, from_=0, to=self.product_stock)
+        buy_frame.tag_bind(buy_button,"<Button>",lambda event: self.transaction_method(int(quan_menu.get())))#create command for buy button
+        self.change_payment()
+        
+    def change_payment(self):
+        """
+        This method is used to update the payment amount based on the quantity entered by the user. It handles different scenarios such as when the quantity is greater than the available stock, when the quantity is zero, and when the quantity is a valid number. 
+        """
+        try:
+            """
+            Try to perform the following operations:
+            - Check if the value entered in `self.new_quan` is greater than the available stock (`self.product_stock`). If it is, display a message indicating that the stock is out of range.
+            - Check if the value entered in `self.new_quan` is equal to 0. If it is, display a message indicating that the payment is PHP 0.
+            - If neither of the above conditions are met, calculate the payment by multiplying the value entered in `self.new_quan` by `self.product_price` and display it as "Payment: PHP {payment}".
+            - If any of the above operations result in a `ValueError`, display a message indicating that the payment is PHP 0
+            """
+            if int(self.new_quan.get()) > self.product_stock:
+                buy_frame.after(100,lambda:self.change_payment())
+                buy_frame.itemconfig(payment_txt,text=f"Payment: Stock out of range")
+            elif int(self.new_quan.get()) == 0: 
+                buy_frame.after(100,lambda:self.change_payment())
+                buy_frame.itemconfig(payment_txt,text=f"Payment: PHP 0")
+            else:
+                buy_frame.itemconfig(payment_txt,text=f"Payment: PHP {int(self.new_quan.get())*self.product_price}")
+                buy_frame.after(100,lambda:self.change_payment())
 
-        product_picture.config(image=self.product_image)
-
-        amount.config(text=str('PHP' + str(self.product_price)))
-
-        new_quan = StringVar()
-        quan_menu.config(textvariable=new_quan, from_=0, to=self.product_stock)
-
-        buy_button.config(command=lambda: self.transaction_method(new_quan.get()), text="BUY")
-
-    def transaction_method(self, new_quan):
+        except ValueError:
+            buy_frame.after(100,lambda:self.change_payment())
+            buy_frame.itemconfig(payment_txt,text=f"Payment: PHP 0")
+            
+    def transaction_method(self, new_quantity):
         global carts_id
         global cart_position
         global trans_code
@@ -477,65 +629,61 @@ class Products(Accounts):
 
             for i in range(5):
                 code += str(trans_code[random.randint(0, 35)])
-            self.product_stock -= int(new_quan)
+            self.product_stock -= new_quantity
             change = f"UPDATE products SET product_stock={self.product_stock} WHERE id={self.id_num}"
             c.execute(change)
             conn.commit()
-            self.product_quan_f.config(text=str(self.product_stock))
+            #self.product_quan_f.config(text=str(self.product_stock))
             self.my_Pinfo.config(
-                text=f"Type: {self.product_type} Price: {self.product_price} Stock: {self.product_stock}")
+                text=f"Type: {self.product_type} Price: {self.get_price()} Stock: {self.product_stock}")
 
             print(self.product_stock)
             window.update()
             if self.product_stock <= 0:
                 delete = f"DElETE FROM products WHERE id={self.id_num}"
                 c.execute(delete)
-
+                product_frame.delete(self.product_frame)
                 conn.commit()
-
-                self.product_quan_f.config(text='sold out')
                 self.my_Pinfo.config(text=f"SOLD OUT")
-                self.buy_button.config(state=DISABLED)
-
+            
             # save to the cart
-            price = int(self.product_price)
-            payment = str(int(new_quan) * price)
+            price = int(self.get_price())
+            payment = new_quantity * price
+            print("payment",payment)
             product_p_c = Label(self.cart_f, image=self.product_image)
             product_info_c = Label(self.cart_f,
                                    text=f"Seller: {self.get_user_name()}\nProduct: {self.product_type}\nAmount: {self.product_price}\nQuantity: {quan}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE: {date}\nDATE OF DELIVER:{self.time_of_deliver}")
 
             product_p_c.pack()
             product_info_c.pack()
-            cart_list.get(user_index).append(self.cart_f)
-
             self.cart_f.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
             self.cart_f.bind("<MouseWheel>", on_mousewheel_carts_F)
+            current_user().my_cart_frame.create_window(200,cart_position,window=self.cart_f,width=WINDOW_WIDTH,heigth=170)
 
             # add cart to user window
-            cart_id = cart_frame.create_window(225, cart_position, window=self.cart_f, width=WINDOW_WIDTH, height=200)
-            cart_position += 200
-            carts_id.append(cart_id)
+            cart_position += 180
 
             # save the transaction
             product_p_t = Label(self.transaction_f, image=self.product_image)
             product_info_t = Label(self.transaction_f,
-                                   text=f"Buyer: {accounts_list[user_index].get_user_name()}\nProduct: {self.product_type}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE OF DELIVER:{self.time_of_deliver}")
+                                   text=f"Buyer: {current_user().get_user_name()}\nProduct: {self.product_type}\nTransaction Code: {str(code)}\nPayment: {payment}\nDATE OF DELIVER:{self.time_of_deliver}")
             button_paid = Button(self.transaction_f, text="paid", command=lambda: (product_info_t.config(text="paid")))
             button_paid.pack()
             product_p_t.pack()
             product_info_t.pack()
-            accounts_list[self.product_index].transaction_list.append(self.transaction_f)
+            #accounts_list[self.product_index].transaction_list.append(self.transaction_f)
+            accounts_list[self.product_index].mytransaction_frame.create_window(200,200,window=self.transaction_f,width=200)
 
             # send transaction to the admin
             insert_transaction_to_tb = [self.image_of_product, self.get_user_name(),
-                                        accounts_list[user_index].get_user_name(), self.product_type, int(payment),
+                                        current_user().get_user_name(), self.product_type, payment,
                                         self.time_of_deliver, code, int(self.product_index), int(user_index)]
             tran.executemany(
                 "INSERT INTO transactions (product_img,seller_name,buyer_name,product_type,payment_amount,day_of_deliver,transaction_code,config_user_id,buyer_index) VALUES (?,?,?,?,?,?,?,?,?)",
                 (insert_transaction_to_tb,))
             conn2.commit()
             transaction_list.append(
-                str(f"Product:{self.product_type} | Seller:{self.get_user_name()} | Price:{self.product_price} >> Buyer:{accounts_list[user_index].get_user_name()} | Payment:{payment} | TRANSACTION CODE:{code}"))
+                str(f"Product:{self.product_type} | Seller:{self.get_user_name()} | Price:{self.product_price} >> Buyer:{current_user().get_user_name()} | Payment:{payment} | TRANSACTION CODE:{code}"))
         else:
             pass
         conn.commit()
@@ -544,18 +692,15 @@ class Products(Accounts):
         conn2.close()
 
     def profile_view(self):
-        product_frame.pack_forget()
-        sell_frame.pack_forget()
-        cart_frame.pack_forget()
-        profile_frame.pack_forget()
-        menu_frame.pack_forget()
-
+        unpack_all_frame_in_userframe()
         self.frame.pack(expand=True, fill=BOTH)
 
     def profile_unview(self):
         self.frame.pack_forget()
-        product_frame.pack(expand=True, fill=BOTH)
+        #product_frame.pack(expand=True, fill=BOTH)
+        buy_frame.place(x=10,y=10)
 
+    # Getter methods to retrieve specific user details
     def payment_frame(self):
         pass
 
@@ -585,7 +730,7 @@ class Products(Accounts):
         window.update()
 
     def get_address(self):
-        return self.seller_address
+        return self.address
 
     def get_contact(self):
         return self.seller_contact
@@ -595,6 +740,15 @@ class Products(Accounts):
 
 
 ################################################################
+def current_user():
+    return accounts_list[user_index]
+
+def show_user_content_window(user_window):
+    return current_user().user_window.pack(fill=BOTH,expand=True)
+def pack_window(windo):
+    return windo.pack(fill=BOTH,expand=True)
+def unpack_window(windo):
+    return windo.pack_forget()
 def save_product(product_imagee, product_name, product_price, product_quan, seller_contact):
     global product_frame
     global num
@@ -605,7 +759,7 @@ def save_product(product_imagee, product_name, product_price, product_quan, sell
         img = Image.open(product_img)
         img = img.resize((40, 40))
         img = ImageTk.PhotoImage(img)
-        accounts_list[user_index].add_product(product_imagee,
+        current_user().add_product(product_imagee,
                                               product_name,
                                               product_price,
                                               product_quan,
@@ -613,7 +767,7 @@ def save_product(product_imagee, product_name, product_price, product_quan, sell
                                               )
 
         prd = Label(inven_frame, image=img,
-                    text=f"Seller:{accounts_list[user_index].get_user_name()} Type:{product_name} Price:{product_price} Stock:{product_quan}",
+                    text=f"Seller:{current_user().get_user_name()} Type:{product_name} Price:{product_price} Stock:{product_quan}",
                     compound="left")
         prd.image = img
         product_list.append(prd)
@@ -637,40 +791,39 @@ def product_validation(product_img, product_type, product_price, product_stock, 
 def remove_in_user_product_list(indexx):
     print("remove index", indexx)
 
-    accounts_list[user_index].user_product_list.remove(accounts_list[user_index].user_product_list[indexx])
-    for item in accounts_list[user_index].user_product_list:
-        if len(accounts_list[user_index].user_product_list) == 0:
+    current_user().user_product_list.remove(current_user().user_product_list[indexx])
+    for item in current_user().user_product_list:
+        if len(current_user().user_product_list) == 0:
             pass
         else:
             item.product_indx -= 1
-    print("new len of list", len(accounts_list[user_index].user_product_list))
+    print("new len of list", len(current_user().user_product_list))
     window.update()
 
 
 #######################  SAVE ACCOUNT
 
-def save_account(id_pic, name, address, username, password):
+def save_account(id_pic, name,address, username, password):
     global sign_in_username
     global accounts_list
-    global age
+    #global age
     try:
-        if sign_in_validation(id_pic, name, address, username, password):
+        if sign_in_validation(id_pic, name,address, username, password):
             conn = sqlite3.connect('Accounts.db')
             c = conn.cursor()
 
             img = Image.open(id_pic)
             img = img.resize((60, 60))
             img = ImageTk.PhotoImage(img)
-            account = Accounts(id_pic, name, address, username, password)
+            account = Accounts(id_pic, name,address, username, password)
             accounts_list.append(account)
             with open(id_pic, 'rb') as image_file:
                 id_picture = image_file.read()
-                c.execute("INSERT INTO accounts (id_pic,name,age,address,username,password) VALUES (?,?,?,?,?,?)",
+                c.execute("INSERT INTO accounts (id_pic,name,address,username,password) VALUES (?,?,?,?,?)",
                           (sqlite3.Binary(id_picture), name, address, username, password))
             conn.commit()
             conn.close()
             sign_in_username.delete(0, END)
-            age.delete(0, END)
             sign_user_address.delete(0, END)
             sign_in_password.delete(0, END)
             confirm_pass.delete(0, END)
@@ -693,10 +846,11 @@ def sign_in_validation(id_pic, name, address, username, password):
 #######################  ADMIN
 
 def admin():
+    size_check()
     global product_list
 
-    log_in_canvas.pack_forget()
-    admin_frame.pack(expand=True, fill=BOTH)
+    unpack_window(log_in_canvas)
+    pack_window(admin_frame)
 
     conn = sqlite3.connect('Accounts.db')
     c = conn.cursor()
@@ -709,7 +863,7 @@ def admin():
         container = LabelFrame(users_frame)
         pro_img = Label(container, image=imgs)
         pro_img.image = imgs
-        infos = Label(container, text=f"NO# {acc[0]} Name: {acc[2]} Age: {acc[3]} Address: {acc[4]}")
+        infos = Label(container, text=f"NO# {acc[0]} Name: {acc[2]}Address: {acc[3]}")
         container.pack()
         pro_img.pack()
         infos.pack()
@@ -726,6 +880,7 @@ def admin():
 
 
 def users(event):
+    size_check()
     admin_menu_frame.pack_forget()
     inven_frame.pack_forget()
     admin_tran_frame.pack_forget()
@@ -734,6 +889,7 @@ def users(event):
 
 
 def inventory(event):
+    size_check()
     admin_menu_frame.pack_forget()
     users_frame.pack_forget()
     admin_tran_frame.pack_forget()
@@ -746,6 +902,7 @@ def admin_log_out():
 
 
 def admin_menu(event):
+    size_check()
     users_frame.pack_forget()
     inven_frame.pack_forget()
     admin_tran_frame.pack_forget()
@@ -754,6 +911,7 @@ def admin_menu(event):
 
 
 def admin_tran(event):
+    size_check()
     users_frame.pack_forget()
     inven_frame.pack_forget()
     admin_menu_frame.pack_forget()
@@ -765,65 +923,52 @@ def admin_tran(event):
 
 
 def user():
+    size_check()
     window.update()
 
 
 def home():
-    global cart_list
+    global product_main_frame
     global cart_position
     global carts_id
     global search_frame_pos
-    log_in_canvas.pack_forget()
-    user_frame.pack(fill=BOTH, expand=True)
-    for items in range(len(accounts_list)):
-        accounts_list[items].show_products()
-
+    global search_frame
+    size_check()
+    unpack_window(log_in_canvas)
+    pack_window(user_frame)
+    unpack_all_frame_in_userframe()
+        
+    current_user().mytransaction_frame.pack(fill=BOTH,expand=True) #show user transaction
+    current_user().my_cart_frame.pack(fill=BOTH, expand=True)  # show user transaction
     # display user data such as cart,products and transaction hirtory
-    for item in accounts_list[user_index].user_product_list:
-        item.show_my_transaction(item.get_username(), item.get_password())
-
-    for item in accounts_list[user_index].user_product_list:
+    for item in current_user().user_product_list:
         item.show_user_products()
-
-    accounts_list[user_index].show_user_products()
-
+        
+    current_user().show_user_products()
     # show carts of user
-    for key in cart_list.keys():
-        if key == user_index:
-            for carts in cart_list.get(key):
-                carts.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
-                carts.bind("<MouseWheel>", on_mousewheel_carts_F)
-
-                cart_id = cart_frame.create_window(225, cart_position, window=carts, width=WINDOW_WIDTH, height=200)
-                cart_position += 200
-                carts_id.append(cart_id)
-
-        else:
-            pass
-    product_frame.pack(expand=True, fill=BOTH)
-
+    pack_window(product_main_frame)
+    
     for types in search_types_id:
         search_frame.delete(str(types))
     search_frame_pos = 200
-
-
-def show_products(event):
-    global search_frame_pos
-    global products
+    
+def unpack_all_frame_in_userframe():
     sell_frame.pack_forget()
-    cart_frame.pack_forget()
+    cart_main_frame.pack_forget()
     profile_frame.pack_forget()
     menu_frame.pack_forget()
     buy_frame.pack_forget()
     user_products_frame.pack_forget()
     user_transaction_frame.pack_forget()
     search_frame.pack_forget()
+    product_main_frame.pack_forget()
 
-    # for x in accounts_list[user_index].user_product_list:
-    #   x.product_container.pack()
-
-    product_frame.pack(expand=True, fill=BOTH)
-
+def show_products(event):
+    global search_frame_pos
+    global products
+    size_check()
+    unpack_all_frame_in_userframe()
+    pack_window(product_main_frame)
     for types in search_types_id:
         search_frame.delete(str(types))
     search_frame_pos = 200
@@ -831,16 +976,10 @@ def show_products(event):
 
 def mysearch(event):
     global search_frame_pos
-    cart_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    menu_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    sell_frame.pack_forget()
-    user_products_frame.pack_forget()
+    size_check()
+    unpack_all_frame_in_userframe()
 
-    search_frame.pack(expand=True, fill=BOTH)
+    pack_window(search_frame)
 
     for types in search_types_id:
         search_frame.delete(str(types))
@@ -849,26 +988,20 @@ def mysearch(event):
 
 def myproducts(event):
     global search_frame_pos
-    global cart_list
-    cart_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    menu_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    search_frame.pack_forget()
-    sell_frame.pack_forget()
 
-    for item in accounts_list[user_index].user_product_list:
+    size_check()
+    unpack_all_frame_in_userframe()
+
+    for item in current_user().user_product_list:
         item.show_user_products()
 
     for items in accounts_list:
-        if items == accounts_list[user_index] and len(accounts_list[user_index].user_product_list) != 0:
+        if items == current_user() and len(current_user().user_product_list) != 0:
             items.show_user_products()
             window.update()
         else:
             items.unshow_my_products()
-    user_products_frame.pack(expand=True, fill=BOTH)
+    pack_window(user_products_frame)
 
     for types in search_types_id:
         search_frame.delete(str(types))
@@ -877,19 +1010,13 @@ def myproducts(event):
 
 def mytransaction(event):
     global search_frame_pos
-    cart_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    menu_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_products_frame.pack_forget()
-    sell_frame.pack_forget()
-    search_frame.pack_forget()
+    size_check()
+    unpack_all_frame_in_userframe()
 
-    for item in accounts_list[user_index].user_product_list:
-        item.show_my_transaction(item.get_username(), item.get_password())
+    for item in current_user().user_product_list:
+        item.show_my_transaction()
 
-    user_transaction_frame.pack(expand=True, fill=BOTH)
+    pack_window(user_transaction_frame)
     for types in search_types_id:
         search_frame.delete(str(types))
     search_frame_pos = 200
@@ -897,8 +1024,9 @@ def mytransaction(event):
 
 def back_to_log_com():
     global search_frame_pos
-    sign_in_canvas.pack_forget()
-    log_in_canvas.pack(fill=BOTH, expand=True)
+    size_check()
+    unpack_window(sign_in_canvas)
+    pack_window(log_in_canvas)
 
     for types in search_types_id:
         search_frame.delete(str(types))
@@ -907,16 +1035,9 @@ def back_to_log_com():
 
 def add_product(event):
     global search_frame_pos
-    cart_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    menu_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_products_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    search_frame.pack_forget()
-
-    sell_frame.pack(expand=True, fill=BOTH)
+    size_check()
+    unpack_all_frame_in_userframe()
+    pack_window(sell_frame)
 
     for types in search_types_id:
         search_frame.delete(str(types))
@@ -929,35 +1050,30 @@ def remove_product():
 
 def menu(event):
     global search_frame_pos
-    user_products_frame.pack_forget()
-    cart_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    sell_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    search_frame.pack_forget()
+    size_check()
+    unpack_all_frame_in_userframe()
 
-    menu_frame.pack(expand=True, fill=BOTH)
+    pack_window(menu_frame)
+    show_menu_transition()
 
     for types in search_types_id:
         search_frame.delete(str(types))
     search_frame_pos = 200
-
+    
+def show_menu_transition(wid=0):
+    if wid == 100:
+        pass
+    else:
+        menu_box.config(width=wid)
+        menu_frame.after(5,lambda:show_menu_transition(wid))
+        wid+=1
 
 def cart(event):
     global search_frame_pos
     global cart_position
-    sell_frame.pack_forget()
-    profile_frame.pack_forget()
-    product_frame.pack_forget()
-    menu_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_products_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    search_frame.pack_forget()
-
-    cart_frame.pack(expand=True, fill=BOTH)
+    size_check()
+    unpack_all_frame_in_userframe()
+    pack_window(cart_main_frame)
 
     for types in search_types_id:
         search_frame.delete(str(types))
@@ -968,32 +1084,19 @@ def profile(event):
     global search_frame_pos
     global user_index
     global accounts_list
-    menu_frame.pack_forget()
-    sell_frame.pack_forget()
-    cart_frame.pack_forget()
-    product_frame.pack_forget()
-    buy_frame.pack_forget()
-    user_products_frame.pack_forget()
-    user_transaction_frame.pack_forget()
-    search_frame.pack_forget()
-
-    profile_frame.pack(expand=True, fill=BOTH)
-    profile_pic.config(image=accounts_list[user_index].get_img())
-    profile_NAME.config(text=accounts_list[user_index].get_user_name())
-    profile_ADDRES.config(text=accounts_list[user_index].get_user_address())
-    profile_AGE.config(text=accounts_list[user_index].get_age())
+    size_check()
+    unpack_all_frame_in_userframe()
+    
+    pack_window(profile_frame)
+    profile_pic.config(image=current_user().get_img())
+    profile_NAME.config(text=current_user().get_user_name())
+    profile_ADDRES.config(text=current_user().get_user_address())
 
     for types in search_types_id:
         search_frame.delete(str(types))
     search_frame_pos = 200
 
-
 # scroll the products
-
-def on_mousewheel_prdcts_F(event):
-    product_frame.yview_scroll(-1 * (event.delta // 120), "units")
-
-
 def on_mousewheel_carts_F(event):
     cart_frame.yview_scroll(-1 * (event.delta // 120), "units")
 
@@ -1015,14 +1118,13 @@ def user_log_out(event):
     global carts_id
     global cart_frame
     global cart_position
-    cart_frame.pack_forget()
-    user_frame.pack_forget()
+    unpack_all_frame_in_userframe()
     cart_position = 200
     for items in accounts_list:
         items.unshow_my_products()
         items.unshow_my_transaction()
     for ids in carts_id:
-        cart_frame.delete(str(ids))
+        cart_main_frame.delete(str(ids))
     welcome()
 
 
@@ -1046,7 +1148,7 @@ def restore_db_to_list():
     global num
     global prd_key
     global product_list
-    global cart_list
+
 
     products_list = []
 
@@ -1064,10 +1166,15 @@ def restore_db_to_list():
     index = 0
     # RESTORE ACCOUNTS FROM THE DATABASE ACCOUNTS TO LIST OF ACCOUNTS
     for acc in c.fetchall():
+        """
+        Retrieve account information from a database and create Account objects for each entry. 
+        c - the cursor object for executing SQL queries
+        accounts_list - a list of Account objects
+        """
         img = Image.open(io.BytesIO(acc[1]))
-        img = img.resize((60, 60))
+        img = img.resize((150, 150))
         img = ImageTk.PhotoImage(img)
-        account = Accounts(img, acc[2], acc[3], acc[4], acc[5], acc[6])
+        account = Accounts(img, acc[2], acc[3], acc[4], acc[5])
         accounts_list.append(account)
         print("name user:", accounts_list[index].get_user_name())
         index += 1
@@ -1076,7 +1183,11 @@ def restore_db_to_list():
 
     # RESTORE PRODUCTS FROM DATABASE PRODUCTS TO ITS OWNERS
     for acc_index in range(len(accounts_list)):
-
+        """
+        Iterate over the accounts list and for each account, iterate over the products restore list. If the account index matches the index in the product, create a new product object and add it to the product list. Also, update the user's product list and increment the product index. Finally, commit the changes to the database.
+        accounts_list - the list of accounts
+        products_restore - the list of products to restore
+        """
         print("len(", acc_index, ")")
         for prod in products_restore:
             print("prod[6]", int(prod[6]), "=", acc_index)
@@ -1108,11 +1219,26 @@ def restore_db_to_list():
 
     # RESTORE TRANSACTION LIST
     for user_id in range(len(accounts_list)):
+        """
+        Iterate over the range of the length of the accounts_list.
+        accounts_list - the list of user accounts
+        """
         c3.execute("SELECT * FROM transactions")
         for _tran in c3.fetchall():
+            """
+            Iterate over the results fetched from the database query and assign each result to the variable `_tran`.
+            """
             if _tran[8] == user_id:
+                """
+                If the 8th element of the `_tran` list is equal to `user_id`, perform the following actions:
+                - Print the value of `_tran[8]`, followed by `'tran'` and `user_index`.
+                - Create a `LabelFrame` called `transaction_container` within the `mytransaction_frame` of the `accounts_list` at the index `user_id`.
+                - Open the image stored in `_tran[1]` as `tran_img`, resize it to 40x40 pixels, and convert it to a `PhotoImage` object.
+                - Create a `Label` called `product_p_t` within `transaction_container` and set its image to `tran_img`.
+                - Create a `Label` called `product
+                """
                 print(_tran[8], 'tran', user_index)
-                transaction_container = LabelFrame(user_transaction_frame)
+                transaction_container = LabelFrame(accounts_list[user_id].mytransaction_frame)
                 tran_img = Image.open(io.BytesIO(_tran[1]))
                 tran_img = tran_img.resize((40, 40))
                 tran_img = ImageTk.PhotoImage(tran_img)
@@ -1125,30 +1251,47 @@ def restore_db_to_list():
                 button_paid.pack()
                 product_p_t.pack()
                 product_info_t.pack()
-                accounts_list[user_id].transaction_list.append(transaction_container)
+                accounts_list[user_id].mytransaction_frame.create_window(200,200,window=transaction_container,width=200)
                 print('gwrtygwhg')
 
     # RESTORE USER CART FROM DB
     for user_id in range(len(accounts_list)):
+        """
+        Loop through each user ID in the accounts list and execute a SQL query to select all transactions from the "transactions" table.
+        accounts_list - a list of user accounts
+        """
         c3.execute("SELECT * FROM transactions")
-        cart_list.update({user_id: []})
         for _tran in c3.fetchall():
+            """
+            Iterate over the results fetched from the database. If the value at index 9 of the fetched result is equal to the given user_id, 
+            perform the following actions:
+            """
             if _tran[9] == user_id:
+                """
+                If the value at index 9 of the _tran list is equal to the user_id, perform the following actions:
+                - Print the value at index 9 and the user_id.
+                - Open the image stored at index 1 of the _tran list and resize it to 40x40 pixels.
+                - Create a PhotoImage object from the resized image and assign it to the cart_img variable.
+                - Create a LabelFrame widget named cart_user_frame.
+                - Create a Label widget named product_p_c and set its image attribute to the cart_img.
+                - Assign the cart_img to the image attribute of the product_p_c widget.
+                - Create a Label widget named product_info_c and set its text attribute to a formatted string containing information from the _tran
+                """
                 print("9:", _tran[9], "user_id = ", user_id)
 
                 cart_img = Image.open(io.BytesIO(_tran[1]))
                 cart_img = cart_img.resize((40, 40))
                 cart_img = ImageTk.PhotoImage(cart_img)
-                cart_user_frame = LabelFrame(cart_frame)
+                cart_user_frame = Canvas(cart_main_frame)
 
                 product_p_c = Label(cart_user_frame, image=cart_img)
                 product_p_c.image = cart_img
                 product_info_c = Label(cart_user_frame,
                                        text=f"Seller: {_tran[2]}\nProduct: {_tran[4]}\nTransaction Code: {_tran[7]}\nPayment: {_tran[5]}\nDATE OF DELIVER:{_tran[6]}")
+                accounts_list[user_id].my_cart_frame.create_window(200,cart_position,window=cart_user_frame,width=400)
 
                 product_p_c.pack()
                 product_info_c.pack()
-                cart_list.get(user_id).append(cart_user_frame)
                 print("name", _tran[9])
 
     conn2.close()
@@ -1157,7 +1300,8 @@ def restore_db_to_list():
 
 
 def welcome():
-    home_canvas.pack(expand=True, fill=BOTH)
+    size_check()
+    pack_window(home_canvas)
 
 
 ###############################################################
@@ -1165,6 +1309,9 @@ def welcome():
 ################################################################
 
 def log_in_validation():
+    """
+    Validate the login credentials entered by the user.
+    """
     global user_index
     conn = sqlite3.connect('Accounts.db')
     c = conn.cursor()
@@ -1175,7 +1322,7 @@ def log_in_validation():
         admin()
     else:
         for acc in c.fetchall():
-            if log_in_username.get() == acc[5] and log_in_password.get() == acc[6]:
+            if log_in_username.get() == acc[4] and log_in_password.get() == acc[5]:
                 user_index = acc[0] - 1
                 log_in_password.delete(0, END)
                 log_in_username.delete(0, END)
@@ -1188,6 +1335,10 @@ def log_in_validation():
 
 ###############################################################
 def write_text(index):
+    """
+    Write a text on a canvas gradually by updating the text with each iteration.
+    index - the current index of the text to be written
+    """
     if index <= len(tagline):
         partial_text = tagline[:index]
         home_canvas.itemconfig(bsu_tagline, text=partial_text)
@@ -1242,17 +1393,14 @@ def hide_password():
 
 ################################################################
 def show_log_in_frame():
-    sign_in_canvas.pack_forget()
-
-    home_canvas.pack_forget()
-
-    log_in_canvas.pack(expand=True, fill=BOTH)
-
+    unpack_window(sign_in_canvas)
+    unpack_window(home_canvas)
+    pack_window(log_in_canvas)
 
 ################################################################
 
 def show_sign_in_frame():
-    log_in_canvas.pack_forget()
+    unpack_window(log_in_canvas)
     sign_in_canvas.pack(expand=True, fill=BOTH)
 
 
@@ -1289,24 +1437,32 @@ def search_type():
 
 
 ############ center the window
-center_window(window, WINDOW_WIDTH, window_heigth)
+center_window(window, WINDOW_WIDTH, WINDOW_HEIGTH)
 ########################## BSU LOGO
 
-logo_big = Image.open('images/logo.png')
+logo_big = Image.open('images/logobsu.png')
 logo_big = logo_big.resize((100, 100))
 logo_big = ImageTk.PhotoImage(logo_big)
 
-logo_med = Image.open('images/logo.png')
+logo_big_super = Image.open('images/logobsu.png')
+logo_big_super = logo_big_super.resize((200, 200))
+logo_big_super = ImageTk.PhotoImage(logo_big_super)
+
+logo_med = Image.open('images/logobsu.png')
 logo_med = logo_med.resize((80, 80))
 logo_med = ImageTk.PhotoImage(logo_med)
 
-logo_small = Image.open('images/logo.png')
+logo_small = Image.open('images/logobsu.png')
 logo_small = logo_small.resize((50, 50))
 logo_small = ImageTk.PhotoImage(logo_small)
 
 user_logo = Image.open('images/user.png')
 user_logo = user_logo.resize((25, 20))
 user_logo = ImageTk.PhotoImage(user_logo)
+
+add_logo = Image.open('images/add.png')
+add_logo = add_logo.resize((25, 20))
+add_logo = ImageTk.PhotoImage(add_logo)
 
 search_logo = Image.open('images/search logo.png')
 search_logo = search_logo.resize((25, 20))
@@ -1332,7 +1488,7 @@ line_logo = Image.open('images/line.png')
 line_logo = line_logo.resize((25, 1))
 line_logo = ImageTk.PhotoImage(line_logo)
 
-bg_img = Image.open('images/homebg.jpg')
+bg_img = Image.open('images/bg_products_F.jpg')
 bg_img = bg_img.resize((WINDOW_WIDTH, 700))
 bg_img = ImageTk.PhotoImage(bg_img)
 
@@ -1407,43 +1563,53 @@ admin_tran_frame = Canvas(admin_frame, bg='black')
 ###################################################################################### USER WINDOW FRAME
 
 
-user_frame = Canvas(window, bg=bgcolor)
+user_frame = Canvas(window)
 
 bottom_can_bar = Canvas(user_frame, width=WINDOW_WIDTH, height=35, bg='white')
 bottom_can_bar.pack(side="bottom")
 ################################################################
 user_bg_img = Image.open('images/log-in-bg.png')
-user_bg_img = user_bg_img.resize((WINDOW_WIDTH, window_heigth))
+user_bg_img = user_bg_img.resize((WINDOW_WIDTH, WINDOW_HEIGTH))
 user_bg_img = ImageTk.PhotoImage(user_bg_img)
 
 # sign_in_canvas.create_image(250, 250, image=bg_img)
+user_frame_bg = Image.open('images/bg_products_F.jpg')
+user_frame_bg = user_frame_bg.resize((WINDOW_WIDTH, 540))
 
-user_frame.create_image(227, 300, image=user_bg_img)
+user_frame_bg = ImageTk.PhotoImage(user_frame_bg)
+
+user_frame.create_image(200, 250, image=user_frame_bg)
 ####################################
 
 bottom_bar_img = Image.open('images/bottom-bar.png')
 bottom_bar_img = bottom_bar_img.resize((WINDOW_WIDTH, 40))
 bottom_bar_img = ImageTk.PhotoImage(bottom_bar_img)
 
-user_frame.create_image(227, window_heigth - 20, image=bottom_bar_img)
+user_frame.create_image(227, WINDOW_HEIGTH - 20, image=bottom_bar_img)
 
 ####################################
 gap_value = (WINDOW_WIDTH - (menu_logo.width() + user_logo.width() + product_logo.width() + home_logo.width())) / 7
 
 menu_button_c = bottom_can_bar.create_image(WINDOW_WIDTH - (menu_logo.width() + gap_value), 18, image=menu_logo)
-bottom_can_bar.tag_bind(menu_button_c, "<Enter>", line_move_to_menu)
+#bottom_can_bar.tag_bind(menu_button_c, "<Enter>", line_move_to_menu)
 bottom_can_bar.tag_bind(menu_button_c, "<Button>", menu)
+#############
+#myprod_button_c = bottom_can_bar.create_image(WINDOW_WIDTH - (menu_logo.width() + gap_value), 18, image=menu_logo)
+#bottom_can_bar.tag_bind(myprod_button_c, "<Enter>", line_move_to_menu)
+#bottom_can_bar.tag_bind(myprod_button_c, "<Button>", myproducts)
 
+#############
 prof_button_c = bottom_can_bar.create_image(WINDOW_WIDTH - (menu_logo.width() + user_logo.width() + (gap_value * 2)),
                                             18, image=user_logo)
 bottom_can_bar.tag_bind(prof_button_c, "<Enter>", line_move_to_prof)
 bottom_can_bar.tag_bind(prof_button_c, "<Button>", profile)
 
-cart_button_c = bottom_can_bar.create_image(
+add_button_c = bottom_can_bar.create_image(
     WINDOW_WIDTH - (menu_logo.width() + user_logo.width() + product_logo.width() + (gap_value * 3)), 18,
-    image=product_logo)
-bottom_can_bar.tag_bind(cart_button_c, "<Enter>", line_move_to_cart)
-bottom_can_bar.tag_bind(cart_button_c, "<Button>", cart)
+    image=add_logo)
+#bottom_can_bar.tag_bind(add_button_c, "<Enter>", line_move_to_cart)
+bottom_can_bar.tag_bind(add_button_c, "<Button>", add_product)
+
 
 search_button_c = bottom_can_bar.create_image(WINDOW_WIDTH - (
         menu_logo.width() + user_logo.width() + product_logo.width() + search_logo.width() + (gap_value * 4)), 18,
@@ -1468,35 +1634,73 @@ line = Label(bottom_can_bar, image=line_logo, bg="black", highlightcolor="black"
 #
 ########################## buy frame
 
-buy_frame = Canvas(user_frame)
-label = Label(buy_frame, text='BUY')
-label.pack(side=TOP)
+buy_frame = Canvas(user_frame,highlightbackground="black",highlightcolor="black",highlightthickness=2,height=500,bg="white")
+#label = Label(buy_frame, text='BUY')
+#label.pack(side=TOP)
+#product_image_BF = None
 
-product_picture = Label(buy_frame)
-product_picture.pack(side=TOP)
+##############
+buy_frame_bg_img = Image.open('images/bgnanaman.jpg')
+buy_frame_bg_img = buy_frame_bg_img.resize((390,510))
+buy_frame_bg_img = ImageTk.PhotoImage(buy_frame_bg_img)
+#buy_frame.create_image(190,255,image=buy_frame_bg_img) #create background image of buyframe
+###############
+quan_menu_img = Image.open('images/txt-box.png')
+quan_menu_img = quan_menu_img.resize((190,190))
+quan_menu_img = ImageTk.PhotoImage(quan_menu_img) 
+#buy_frame.create_image(270,270,image=quan_menu_img)
 
-amount = Label(buy_frame)
-amount.pack(side=LEFT)
+product_info_BF = buy_frame.create_text(110,310,text="",font=("Calibre", 10,"bold"),fill="black") #create text information 
+##############
+buy_btn_img = Image.open('images/buy.png')
+buy_btn_img = buy_btn_img.resize((70,55))
+buy_btn_img = ImageTk.PhotoImage(buy_btn_img) #image for buy button 
+buy_button = buy_frame.create_image(290,470,image=buy_btn_img) #create button
+##############
+prof_btn_img = Image.open('images/user.png')
+prof_btn_img = prof_btn_img.resize((20,20))
+prof_btn_img = ImageTk.PhotoImage(prof_btn_img) #image for buy button 
+view_profile_button = buy_frame.create_image(280,310,image=prof_btn_img) #create button
+buy_frame.create_text(280,330,text="Profile",font=("Calibre", 6,"bold"),fill="black")#create text 'profile' label
+##############
+product_picture = Label(buy_frame,highlightbackground="black",highlightcolor="black",highlightthickness=2) #Product image container
+buy_frame.create_window(190,140,window=product_picture,width=250,height=250)
+buy_frame.create_line(10,280,370,280,width=2,fill="black")
 
-new_quan = StringVar()
-quan_menu = Spinbox(buy_frame)
-quan_menu.pack(side=RIGHT)
+#amount = Label(buy_frame)
+#amount.pack(side=LEFT)
+############
 
-buy_button = Button(buy_frame)
-buy_button.pack(side=BOTTOM)
+new_quan = IntVar()
+quan_menu = Spinbox(buy_frame,width=15)
+quan_menu.place(x=170,y=400)
+############ payment text
+payment_txt = buy_frame.create_text(40,470,text="Payment: 0")
+#buy_button.pack(side=BOTTOM)
 
 ########################## MENU WINDOW FRAME
 
 menu_frame = Canvas(user_frame, bg='black')
-bg_menu = Label(menu_frame, image=bg_img)
-bg_menu.pack(expand=True, fill=BOTH)
+menu_frame.create_image(200,280,image=bg_img)
+menu_frame.create_image(200,280,image=logo_big_super)
 
-menu = Frame(bg_menu, width=200)
-menu.pack(side='right', fill=Y)
+menu_box = Canvas(menu_frame,highlightbackground="black",highlightcolor="black",highlightthickness=2,bg=bgcolor,height=500)
+menu_box.pack(side='right')
 
-log_out = Label(menu, text="Log out")
-log_out.pack()
-log_out.bind('<Button>', user_log_out)
+log_out = menu_box.create_text(25,15,text="Log out")
+menu_box.tag_bind(log_out,'<Button>', user_log_out)
+
+menu_box.create_line(0,30,100,30,fill="black",width=2)
+
+show_transaction_btn = menu_box.create_text(35,40,text="Transaction")
+menu_box.tag_bind(show_transaction_btn,'<Button>', mytransaction)
+
+menu_box.create_line(0,50,100,50,fill="black",width=2)
+
+show_products_btn = menu_box.create_text(37,60,text="My Products")
+menu_box.tag_bind(show_products_btn,'<Button>', myproducts)
+
+menu_box.create_line(0,70,100,70,fill="black",width=2)
 
 ########################## ADD PRODUCT WINDOW FRAME
 
@@ -1527,10 +1731,13 @@ upload_product.pack()
 cart_frame_bg = Image.open('images/bgnanaman.jpg')
 cart_frame_bg = cart_frame_bg.resize((470, 610))
 cart_frame_bg = ImageTk.PhotoImage(cart_frame_bg)
+cart_main_frame = Canvas(user_frame)
 
-cart_frame = Canvas(user_frame)
-cart_bg = Label(cart_frame, image=cart_frame_bg)
+cart_bg = Label(cart_main_frame, image=cart_frame_bg,width=WINDOW_WIDTH,height=50)
 cart_bg.pack()
+
+cart_frame = Canvas(cart_main_frame,width=WINDOW_WIDTH,height=450)
+pack_window(cart_frame)
 
 cart_bg.bind("<Configure>", lambda e: cart_frame.configure(scrollregion=cart_frame.bbox("all")))
 cart_bg.bind("<MouseWheel>", on_mousewheel_carts_F)
@@ -1595,16 +1802,6 @@ profile_NAME = Label(profile_outine,
 profile_name_L.pack()
 profile_NAME.pack()
 
-profile_age_L = Label(profile_outine,
-                      text='AGE',
-                      font=(tk_font, 8, 'bold'),
-                      bg=bgcolor)
-profile_AGE = Label(profile_outine,
-                    bg=bgcolor,
-                    font=(tk_font, 18, 'bold')
-                    )
-profile_age_L.pack()
-profile_AGE.pack()
 
 profile_address_L = Label(profile_outine,
                           text='ADDRESS',
@@ -1625,21 +1822,35 @@ product_frame_bg = ImageTk.PhotoImage(product_frame_bg)
 
 # container image
 con_bg_img = Image.open('images/productcont.jpg')
-con_bg_img = con_bg_img.resize((200, 200))
+con_bg_img = con_bg_img.resize((170, 170))
 con_bg_img = ImageTk.PhotoImage(con_bg_img)
 
-product_frame = Canvas(user_frame, bg='red', scrollregion=(0, 0, 400, 400), )
+buy_img = Image.open('images/buy (2).png')
+buy_img = buy_img.resize((50,33))
+buy_img = ImageTk.PhotoImage(buy_img)
+ 
+product_main_frame = Canvas(user_frame,bg="red")
+product_frame = Canvas(product_main_frame, bg='#deb887', scrollregion=(0, 0, 10000, 10000), width=WINDOW_WIDTH,height=450)
+product_frame.pack(fill=X,side="bottom")
 # Bind mouse wheel event to the canvas
 # product_frame.bind("<MouseWheel>", on_mouse_wheel)
 
 # product_frame.create_image(220,256 , image = product_frame_bg)
-background_of_prod_frame = Label(product_frame, image=product_frame_bg,width=WINDOW_WIDTH)
+background_of_prod_frame = Canvas(product_main_frame,width=WINDOW_WIDTH)
 background_of_prod_frame.pack(fill=BOTH, expand=True)
 
-product_frame.create_text(50, 50, text="SPARduct", font=(tk_font, 10, "bold"), fill="black", anchor=N)
+#create image bacakground for home
+background_of_prod_frame.create_image(200,267,image=product_frame_bg)
 
-product_frame.bind("<Configure>", lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
-product_frame.bind("<MouseWheel>", on_mousewheel_prdcts_F)
+######## cart button
+cart_button_c = background_of_prod_frame.create_image(380, 18,
+    image=product_logo)
+background_of_prod_frame.tag_bind(cart_button_c, "<Button>", cart)
+########
+background_of_prod_frame.create_text(200, 50, text="SPARduct", font=(tk_font,20, "bold"), fill="black")
+
+#product_frame.bind("<Configure>", lambda e: product_frame.configure(scrollregion=product_frame.bbox("all")))
+#self.product_containerproduct_frame.bind("<MouseWheel>", on_mousewheel_prdcts_F)
 
 ########################## USER PRODUCTS WINDOW FRAME
 
@@ -1677,7 +1888,7 @@ sign_to_img = sign_to_img.resize((160, 80))
 sign_to_img = ImageTk.PhotoImage(sign_to_img)
 
 sign_bg_img = Image.open('images/new-.jpg')
-sign_bg_img = sign_bg_img.resize((WINDOW_WIDTH, window_heigth))
+sign_bg_img = sign_bg_img.resize((WINDOW_WIDTH, WINDOW_HEIGTH))
 sign_bg_img = ImageTk.PhotoImage(sign_bg_img)
 
 sign_out_img = Image.open('images/sign-out.png')
@@ -1869,7 +2080,7 @@ sun_img = sun_img.resize((40, 40))
 sun_img = ImageTk.PhotoImage(sun_img)
 
 log_bg_img = Image.open('images/new-.jpg')
-log_bg_img = log_bg_img.resize((WINDOW_WIDTH, window_heigth))
+log_bg_img = log_bg_img.resize((WINDOW_WIDTH, WINDOW_HEIGTH))
 log_bg_img = ImageTk.PhotoImage(log_bg_img)
 
 show_pass_img = Image.open('images/eye2.png')
@@ -1975,7 +2186,7 @@ get_start_img = get_start_img.resize((120, 60))
 get_start_img = ImageTk.PhotoImage(get_start_img)
 
 wel_bg = Image.open('images/new-.jpg')
-wel_bg = wel_bg.resize((WINDOW_WIDTH, window_heigth))
+wel_bg = wel_bg.resize((WINDOW_WIDTH, WINDOW_HEIGTH))
 wel_bg = ImageTk.PhotoImage(wel_bg)
 
 myLogo = Image.open('images/sa.png')
@@ -1993,7 +2204,7 @@ gap_button_start_val = (WINDOW_WIDTH-get_start_img.width())//2
 gap_logo_val = (WINDOW_WIDTH-myLogo.width())//2
 
 #welcome background
-home_canvas.create_image(WINDOW_WIDTH-(wel_bg.width()//2), window_heigth-(wel_bg.height()//2), image=wel_bg)
+home_canvas.create_image(WINDOW_WIDTH-(wel_bg.width()//2), WINDOW_HEIGTH-(wel_bg.height()//2), image=wel_bg)
 
 home_canvas.create_image(gap_logo_val+(myLogo.width()//2), 220, image=myLogo)
 # home_canvas.create_image(220,100,image=spar_logo)
@@ -2017,10 +2228,13 @@ btn_quit = Button(qt, command=lambda: window.quit(), text="X", fg='black', bg='w
 btn_quit.pack(side='right', anchor=SW)
 
 if __name__ == '__main__':
+    size_check()
     s = ttk.Style()
     s.theme_use('clam')
     restore_db_to_list()
     welcome()
-   
+    print(x_position)
+    
+# Activate the main window
+window.mainloop() 
 
-window.mainloop()
