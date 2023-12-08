@@ -733,13 +733,14 @@ class Products(Accounts):
 
         buy_frame.tag_bind(view_profile_button, "<Button>", lambda event: self.profile_view())
         # amount.config(text=str('PHP' + str(self.product_price)))
-        quan_menu.config(textvariable=self.new_quan, from_=0, to=self.product_stock)
+        quan_menu.config(textvariable=self.new_quan, from_=0, to=self.product_stock,command=self.change_payment)
         buy_frame.tag_bind(buy_button, "<Button>",
                            lambda event: self.transaction_method(
                                self.product_stock - int(quan_menu.get())))  # create command for buy button
-        self.change_payment()
+        #self.change_payment()
 
     def change_payment(self):
+        print("payment",quan_menu.get())
         """
         This method is used to update the payment amount based on the quantity entered by the user. It handles different scenarios such as when the quantity is greater than the available stock, when the quantity is zero, and when the quantity is a valid number.
         """
@@ -751,24 +752,24 @@ class Products(Accounts):
             - If neither of the above conditions are met, calculate the payment by multiplying the value entered in `self.new_quan` by `self.product_price` and display it as "Payment: PHP {payment}".
             - If any of the above operations result in a `ValueError`, display a message indicating that the payment is PHP 0
             """
+
             if int(self.new_quan.get()) > self.product_stock:
-                buy_frame.after(100, lambda: self.change_payment())
                 buy_frame.itemconfig(payment_txt, text=f"Payment: Stock out of range")
             elif int(self.new_quan.get()) == 0:
-                buy_frame.after(100, lambda: self.change_payment())
                 buy_frame.itemconfig(payment_txt, text=f"Payment: PHP 0")
             else:
                 buy_frame.itemconfig(payment_txt, text=f"Payment: PHP {int(self.new_quan.get()) * self.product_price}")
-                buy_frame.after(100, lambda: self.change_payment())
 
         except ValueError:
-            buy_frame.after(100, lambda: self.change_payment())
-            buy_frame.itemconfig(payment_txt, text=f"Payment: PHP 0")
-
+            buy_frame.itemconfig(payment_txt, text=f"Payment: PHP ")
+    def paid(self):
+        print("paid:",self.product_price)
     def transaction_method(self, new_quantity):
         global carts_id
         global cart_position
         global trans_code
+        buy_frame.itemconfig(payment_txt, text=f"Payment: PHP 0")
+        quan_menu.delete(0,END)
         conn = sqlite3.connect("Products.db")
         conn2 = sqlite3.connect("Transaction.db")
         tran = conn2.cursor()
@@ -1103,6 +1104,11 @@ def remove_in_user_product_list(indexx):
     print("new len of list", len(current_user().user_product_list))
     window.update()
 
+def paid(user_frame,id_frame,db_id):
+
+    accounts_list[user_frame].mytransaction_frame.delete(id_frame)
+
+
 #######################  SAVE ACCOUNT
 def save_account(id_pic, name, address, username, password):
     global sign_in_username
@@ -1141,7 +1147,6 @@ def sign_in():
     except NameError as e:
         messagebox.showerror("Error", f"Please fill in all the required fields to create an \naccount!")
 
-
 def sign_in_validation(id_pic, name, address, username, password):
     valid = []
     conn = sqlite3.connect("Accounts.db")
@@ -1179,6 +1184,9 @@ def hover_menu(key):
     elif key == 3:
         menu_box.itemconfig(cart_button_c, image=cart_logo2)
         menu_box.itemconfig(txt4, fill='red')
+    elif key == 4:
+        menu_box.itemconfig(about_button_c, image=about_logo2)
+        menu_box.itemconfig(txt5, fill='black')
 def unhover_menu(key):
     if key == 0:
         menu_box.itemconfig(log_out, image=log_out_img)
@@ -1192,6 +1200,9 @@ def unhover_menu(key):
     elif key == 3:
         menu_box.itemconfig(cart_button_c, image=cart_logo)
         menu_box.itemconfig(txt4, fill='black')
+    elif key == 4:
+        menu_box.itemconfig(about_button_c, image=about_logo)
+        menu_box.itemconfig(txt5, fill='black')
 #######################  ADMIN
 # ==============================================================================================================================
 def show_acc_to_admin(id_pic, name, address):
@@ -1465,6 +1476,7 @@ def show_products(event):
     global search_frame_pos
     global products
     size_check()
+    quan_menu.delete(0,END)
     unpack_all_frame_in_userframe()
     pack_window(product_main_frame)
     for types in search_types_id:
@@ -1475,6 +1487,7 @@ def show_products(event):
 def mysearch(event):
     global search_frame_pos
     size_check()
+    quan_menu.delete(0, END)
     unpack_all_frame_in_userframe()
 
     pack_window(search_frame)
@@ -1486,7 +1499,7 @@ def mysearch(event):
 
 def myproducts(event):
     global search_frame_pos
-
+    quan_menu.delete(0, END)
     size_check()
     unpack_all_frame_in_userframe()
     current_user().my_products_frame.pack(fill=BOTH, expand=True, side='bottom')  # show user transaction
@@ -1499,6 +1512,7 @@ def myproducts(event):
 
 def mytransaction(event):
     global search_frame_pos
+    quan_menu.delete(0, END)
     size_check()
     unpack_all_frame_in_userframe()
 
@@ -1525,6 +1539,7 @@ def back_to_log_com():
 def add_product(event):
     global search_frame_pos
     size_check()
+    quan_menu.delete(0, END)
     unpack_all_frame_in_userframe()
     pack_window(sell_frame)
 
@@ -1537,7 +1552,7 @@ def menu(event):
     global search_frame_pos
     size_check()
     unpack_all_frame_in_userframe()
-
+    quan_menu.delete(0, END)
     pack_window(menu_frame)
     show_menu_transition()
 
@@ -1559,6 +1574,7 @@ def cart(event):
     global search_frame_pos
     global cart_position
     size_check()
+    quan_menu.delete(0, END)
     unpack_all_frame_in_userframe()
     current_user().my_cart_frame.pack(fill=BOTH, expand=True, side='bottom')  # show user transaction
     pack_window(cart_main_frame)
@@ -1573,6 +1589,7 @@ def profile(event):
     global user_index
     global accounts_list
     size_check()
+    quan_menu.delete(0, END)
     unpack_all_frame_in_userframe()
 
     pack_window(profile_frame)
@@ -1632,9 +1649,13 @@ def user_log_out(event):
         acc.my_products_frame.pack_forget()
     welcome()
 
-
+def back_about(event):
+    unpack_window(about_frame)
+    pack_window(menu_frame)
 def about():
-    pass
+    unpack_all_frame_in_userframe()
+    pack_window(about_frame)
+
 
 ################################################################
 # center the window
@@ -1830,11 +1851,12 @@ def restore_db_to_list():
                 text_label = Canvas(transaction_container, width=175, height=200, highlightcolor="black",
                                     highlightbackground="black", highlightthickness=2)
                 text_label.create_image(88, 100, image=img_bg_txt)
-                text_label.create_text(80, 80, font=('Times', 10),
+                txt_id = text_label.create_text(80, 80, font=('Times', 10),
                                        text=f"Buyer: {_tran[3]}\n\nType: {_tran[4]}\n\nPayment: {_tran[5]}\n\nDate of deliver: {_tran[6]}\n\nTrans Code: {_tran[7]}")
                 text_label.pack(side='right')
 
                 product_p_c.pack(side='left')
+
                 frame_id = accounts_list[user_id].mytransaction_frame.create_window(trans_pos.X_POSITION,
                                                                                     trans_pos.Y_POSITION,
                                                                                     window=transaction_container,
@@ -2013,7 +2035,6 @@ def write_text(index):
 
         home_canvas.after(40, write_text, index + 1)
 
-
 def enter_txt_U():
     """
     This function is used to enter text in a user interface. It updates the appearance of the username line in the UI, updates the window, and prints a message.
@@ -2162,6 +2183,9 @@ user_logo2 = create_img('donwloadimages/user (2).png', 25, 25)
 add_logo = create_img('donwloadimages/plus (2).png', 25, 20)
 add_logo2 = create_img('donwloadimages/plus (3).png', 25, 25)
 
+about_logo = create_img('donwloadimages/information.png', 25, 20)
+about_logo2 = create_img('donwloadimages/information (1).png', 25, 25)
+
 search_logo = create_img('donwloadimages/magnifying-glass.png', 25, 20)
 search_logo2 = create_img('donwloadimages/magnifying-glass (1).png', 25, 25)
 
@@ -2187,6 +2211,7 @@ img_bg_txt = create_img('donwloadimages/bg17.jpg', 175, 200)
 
 con_txt_img = create_img('images/bg17.jpg', 263, 120)
 
+back_img = create_img("images/back-arrow.png",24,24)
 # BACKGROUND IMAGE
 user_frame_bg_img = create_img('donwloadimages/white_bg.jpg', WINDOW_WIDTH, 540)
 
@@ -2384,7 +2409,7 @@ buy_frame.create_line(10, 280, 370, 280, width=2, fill="black")
 ############
 
 new_quan = IntVar()
-quan_menu = Spinbox(buy_frame, width=15)
+quan_menu = Spinbox(buy_frame, width=15,state="readonly")
 quan_menu.place(x=170, y=400)
 
 ############ payment text
@@ -2446,6 +2471,30 @@ menu_box.tag_bind(cart_button_c, "<Leave>", lambda event: unhover_menu(3))
 menu_box.tag_bind(txt4, "<Button>", cart)
 menu_box.tag_bind(txt4, "<Enter>", lambda event: hover_menu(3))
 menu_box.tag_bind(txt4, "<Leave>", lambda event: unhover_menu(3))
+
+txt5 = menu_box.create_text(62, 223, text="About")
+about_button_c = menu_box.create_image(30, 223, image=about_logo)
+menu_box.tag_bind(about_button_c, "<Button>", lambda event:about())
+menu_box.tag_bind(about_button_c, "<Enter>", lambda event: hover_menu(4))
+menu_box.tag_bind(about_button_c, "<Leave>", lambda event: unhover_menu(4))
+menu_box.tag_bind(txt5, "<Button>", lambda event:about())
+menu_box.tag_bind(txt5, "<Enter>", lambda event: hover_menu(4))
+menu_box.tag_bind(txt5, "<Leave>", lambda event: unhover_menu(4))
+
+########################## About window frame
+
+back_about_im = create_img('donwloadimages/bg13.jpg',WINDOW_WIDTH,WINDOW_HEIGTH)
+about_frame = Canvas(user_frame)
+bck_frm_abt = about_frame.create_image(20,20,image=back_img)
+about_frame.tag_bind(bck_frm_abt,'<Button>',back_about)
+about_frame.create_image(200,75,image=logo_big)
+about_text = (f"          This program is created as part of the\n"
+              f"      requirements for the Computer Programming,\n"
+              f"    a major subject for Computer technology students.\n"
+              f"   The project took a month in the making from october\n "
+              f"  to december.The following students from CPET - 1102,\n"
+              f"S,Y 2023-2024, are the main contributors of the program.")
+about_txt = about_frame.create_text(200,200,text=about_text,font=("Justify",9))
 
 ########################## ADD PRODUCT WINDOW FRAME
 
