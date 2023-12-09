@@ -1,5 +1,4 @@
 # IMPORTSs
-
 from tkinter.ttk import *
 import io
 from tkinter import messagebox
@@ -18,7 +17,6 @@ import sqlite3
 
 ###########
 ################################################################
-
 # Create a new window using the Tkinter library.
 # - Set the width of the window to 400 pixels.
 # - Set the height of the window to 600 pixels.
@@ -44,9 +42,7 @@ tk_font = "Calibre"
 bgcolor = "#eeeeee"
 text_color = "red"
 user_index = 0
-nums = 1
 ######################### LISTS
-user_product_listsaction_list = []  # Create an empty list to store user product lists.
 trans_code = "qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
 num = 0
 DATE = datetime.now().date().today()
@@ -55,7 +51,6 @@ prd_key = 0
 product_list = []
 transaction_list = []
 
-position = 200
 cart_position = 200
 search_frame_pos = 200
 search_types_id = []
@@ -117,17 +112,14 @@ def size_check():
     window.update()
 
 
-try:
-    def open_id_image():
-        """
-        Open a file dialog to allow the user to select an image file for identification purposes.
-        global id_picture - the path of the selected image file
-        """
-        global id_picture
-        id_picture = filedialog.askopenfilename()
-except:
-    messagebox.showerror("Error", 'Please fill in all the required fields to create an account')
 
+def open_id_image():
+    """
+    Open a file dialog to allow the user to select an image file for identification purposes.
+    global id_picture - the path of the selected image file
+    """
+    global id_picture
+    id_picture = filedialog.askopenfilename()
 
 def upload_image_function():
     """
@@ -297,18 +289,6 @@ class Accounts():
             else:
                 items.show_my_product()
                 window.update()
-
-    def show_cart(self):
-        """
-        Display the cart for the current user and hide the carts for other users.
-        """
-        pass
-
-    def unshow_cart(self):
-        """
-        Hide the cart items from the screen by using the `pack_forget()` method on each item in the `cart_list`.
-        """
-        pass
 
     def show_my_transaction(self):
         """
@@ -515,44 +495,6 @@ class Products(Accounts):
         """
         return self.product_index
 
-    def show(self):
-        """
-        Display the product information and handle key events.
-        """
-        global product_frame
-        product_frame.bind("<Key>", self.move)
-        index = user_index
-        conn = sqlite3.connect("Products.db")
-        c = conn.cursor()
-        if self.product_stock <= 0:
-            """
-            Check if the product stock is less than or equal to zero. If so, delete the product from the database, update the UI to indicate that the product is sold out, disable the buy button, and hide the product container. If the product stock is greater than zero, do nothing.
-            """
-            delete = f"DElETE FROM products WHERE id={self.id_num}"
-            c.execute(delete)
-            conn.commit()
-            conn.close()
-            self.product_container.pack_forget()
-            self.myproduct_container.pack_forget()
-
-        else:
-            pass
-        conn.commit()
-        conn.close()
-
-    def remove_product(self):
-        print("prd remove", self.id_num)
-        self.myproduct_container.pack_forget()
-        conn = sqlite3.connect("Products.db")
-        c = conn.cursor()
-        delete = f"DElETE FROM products WHERE id={self.id_num}"
-        c.execute(delete)
-        remove_in_user_product_list(self.product_indx)
-
-        conn.commit()
-        conn.close()
-        window.update()
-
     def show_profile_frame(self, image, username, address):
         # self.label = Label(self.frame, image=self.id_pic)
         self.con = Canvas(self.frame, highlightbackground="black", highlightcolor="black", highlightthickness=2, bd=1,
@@ -637,15 +579,6 @@ class Products(Accounts):
         check_position_of_searched_prodcuts()
 
         # self.product_container.config(width=WINDOW_WIDTH)
-
-    def move(self, event):
-        """
-        Move the product container widget by changing its x and y coordinates.
-        event - the event that triggered the move
-        """
-        self.product_container.place(x=200, y=self.product_container.winfo_y() + 10)
-        window.update()
-
     def insert_to(self):
         """
         This method is used to insert a product frame into a container. It sets the position and size of the product frame, binds events for scrolling, and updates the position variables for the next insertion.
@@ -681,13 +614,6 @@ class Products(Accounts):
         product_frame.yview_scroll(-1 * (event.delta // 120), "units")
         print("bindd")
 
-    def unpack(self):
-        """
-        Hide the product container and the myproduct container by removing them from the display.
-        """
-        self.product_container.pack_forget()
-        self.myproduct_container.pack_forget()
-
     def show_my_product(self):
         """
         Display the product information and image on the screen. If the product is out of stock, remove it from the database and disable the buy button. Otherwise, display the product image, information, and remove button.
@@ -702,11 +628,7 @@ class Products(Accounts):
             conn.commit()
             conn.close()
         else:
-            self.myproduct_image_f.pack()
-            self.my_Pinfo.pack()
-            self.myproduct_container.pack()
-            self.remove_button.pack()
-
+            pass
     def _add_tocart(self):
         """
         This method is used to add a product to the user's shopping cart. It updates the GUI to display the product information and allows the user to select the quantity and payment method for the transaction.
@@ -754,8 +676,6 @@ class Products(Accounts):
 
         except ValueError:
             buy_frame.itemconfig(payment_txt, text=f"Payment: PHP ")
-    def paid(self):
-        print("paid:",self.product_price)
     def transaction_method(self, new_quantity):
         global carts_id
         global cart_position
@@ -962,7 +882,6 @@ class Products(Accounts):
 def scoll_wheel_of_user_histo(event, frame):
     return frame.yview_scroll(-1 * (event.delta // 120), "units")
 
-
 def check_position_of_searched_prodcuts():
     if search_pos.X_POSITION == search_pos.CHECK_POS_X:
 
@@ -1003,10 +922,8 @@ def refresh_scroll_Y():
         update_scroll_Y(search_frame_container, search_pos.SCROLL_Y_VAL_OF_PRDCTS)
     search_datas.clear()
 
-
 def current_user():
     return accounts_list[user_index]
-
 
 def show_user_content_window(user_window):
     return current_user().user_window.pack(fill=BOTH, expand=True)
@@ -1015,10 +932,8 @@ def show_user_content_window(user_window):
 def pack_window(windo):
     return windo.pack(fill=BOTH, expand=True)
 
-
 def unpack_window(windo):
     return windo.pack_forget()
-
 
 def save_product(product_imagee, product_name, product_price, product_quan, seller_contact):
     global product_frame
@@ -1027,6 +942,8 @@ def save_product(product_imagee, product_name, product_price, product_quan, sell
     global product_list
     if (
             product_validation(product_imagee, product_name, product_price, product_quan, seller_contact)):
+        messagebox.showerror('error', 'Please provide all required details to post your product for sale')
+    else:
         img = Image.open(product_img)
         img = img.resize((40, 40))
         img = ImageTk.PhotoImage(img)
@@ -1048,16 +965,13 @@ def save_product(product_imagee, product_name, product_price, product_quan, sell
         upload_stock.delete(0, END)
         upload_contact.delete(0, END)
 
-    else:
-        return messagebox.showerror('error', 'Please provide all required details to post your product for sale')
-
 
 def product_validation(product_img, product_type, product_price, product_stock, seller_con):
-    if product_img == None or product_type == "" or product_price == '' or product_stock == '' or seller_con == '' or check_number(
-            seller_con) or check_price(product_price) or check_stock(product_stock):
-        return False
-    else:
+    if not(product_type == "" or product_price == '' or product_stock == '' or seller_con == '' or check_number(
+            seller_con) or check_price(product_price) or check_stock(product_stock)):
         return True
+    else:
+        return False
 
 
 def check_number(contact):
@@ -1151,13 +1065,8 @@ def sign_in_validation(id_pic, name, address, username, password):
     conn.close()
     if not (
             id_pic == None or name == '' or address == '' or username == ''):
-
-        if username not in valid:
-            if password == confirm_pass.get():
-                return True
-        else:
-            messagebox.showerror("Invalid", 'Error: Username already exists. Please choose a different username')
-            return False
+        if password == confirm_pass.get():
+            return True
     else:
         messagebox.showerror("Invalid", 'Please fill in all the required fields to create an \naccount!')
         return False
@@ -1603,25 +1512,6 @@ def profile(event):
 def on_mousewheel_carts_F(event):
     cart_frame.yview_scroll(-1 * (event.delta // 120), "units")
 
-def change_bg_color():
-    """
-    Change the background color of the log_in_canvas to a light color and update the image of the switch to moon_img when the switch is clicked.
-    @return None
-    """
-    log_in_canvas.itemconfig(switch, image=moon_img)
-    log_in_canvas.config(bg='#414a4c')
-
-    log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_to_light())
-
-def change_to_light():
-    """
-    Change the appearance of the canvas to a light theme by updating the image of a switch, the background color, and binding a button event to a function that changes the background color.
-    @return None
-    """
-    log_in_canvas.itemconfig(switch, image=sun_img)
-    log_in_canvas.config(bg=bgcolor)
-    log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
-
 def user_log_out(event):
     """
     Log out the user from the system.
@@ -1718,90 +1608,95 @@ def restore_db_to_list():
         print("len(", acc_index, ")")
         for prod in products_restore:
             print("prod[6]", int(prod[6]), "=", acc_index)
-            if prod[6] == acc_index:
-                print("prod[6]", int(prod[6]))
-                img = create_img(io.BytesIO(prod[1]), 100, 100)
-                img2 = create_img(io.BytesIO(prod[1]), 75, 75)
-                product = Products(prod[1], prod[2], prod[3], prod[4], prod[5], acc_index, prod[0],
-                                   accounts_list[acc_index].product_indx)
-                product.show_profile_frame(accounts_list[acc_index].id_pic, accounts_list[acc_index].get_user_name(),
-                                           accounts_list[acc_index].get_user_address())
-                # prd = Label(inven_frame, image=img,
-                #           text=f"Seller:{accounts_list[acc_index].get_user_name()} Type:{prod[2]} Price:{prod[3]} Stock:{prod[4]}",
-                #          compound="left")
-                # prd.image = img
+            if prod[4] == 0:
+                delet = f"DELETE FROM products WHERE id={prod[0]}"
+                c2.execute(delet)
+                conn2.commit()
+            else:
+                if prod[6] == acc_index:
+                    print("prod[6]", int(prod[6]))
+                    img = create_img(io.BytesIO(prod[1]), 100, 100)
+                    img2 = create_img(io.BytesIO(prod[1]), 75, 75)
+                    product = Products(prod[1], prod[2], prod[3], prod[4], prod[5], acc_index, prod[0],
+                                       accounts_list[acc_index].product_indx)
+                    product.show_profile_frame(accounts_list[acc_index].id_pic, accounts_list[acc_index].get_user_name(),
+                                               accounts_list[acc_index].get_user_address())
+                    # prd = Label(inven_frame, image=img,
+                    #           text=f"Seller:{accounts_list[acc_index].get_user_name()} Type:{prod[2]} Price:{prod[3]} Stock:{prod[4]}",
+                    #          compound="left")
+                    # prd.image = img
 
-                # product_list.append(prd)
-                # print(prod[0])
+                    # product_list.append(prd)
+                    # print(prod[0])
 
-                accounts_list[acc_index].user_product_list.append(product)
-                #
-                accounts_list[acc_index].product_indx += 1
-                print("prd number before", prd_key)
-                if prod[0] > prd_key:
-                    prd_key = prod[0]
-                    print("prd number after", prd_key)
-                # ---------------------------------------------------------------------------------------------------------
-                user_product_frame = Canvas(accounts_list[acc_index].my_products_frame, bg="white",
-                                            highlightcolor="black",
-                                            highlightbackground="black", highlightthickness=2, width=WINDOW_WIDTH - 40)
+                    accounts_list[acc_index].user_product_list.append(product)
+                    #
+                    accounts_list[acc_index].product_indx += 1
+                    print("prd number before", prd_key)
+                    if prod[0] > prd_key:
+                        prd_key = prod[0]
+                        print("prd number after", prd_key)
+                    # ---------------------------------------------------------------------------------------------------------
+                    user_product_frame = Canvas(accounts_list[acc_index].my_products_frame, bg="white",
+                                                highlightcolor="black",
+                                                highlightbackground="black", highlightthickness=2, width=WINDOW_WIDTH - 40)
 
-                myproduct_img = Label(user_product_frame, image=img,
-                                      highlightcolor="black",
-                                      highlightthickness=2,
-                                      highlightbackground="black")
-                myproduct_img.image = img
+                    myproduct_img = Label(user_product_frame, image=img,
+                                          highlightcolor="black",
+                                          highlightthickness=2,
+                                          highlightbackground="black")
+                    myproduct_img.image = img
 
-                # cart_user_frame.create_text(250,100,text="hahaha")
+                    # cart_user_frame.create_text(250,100,text="hahaha")
 
-                text_label_MyP = Canvas(user_product_frame, width=175, height=200, highlightcolor="black",
-                                        highlightbackground="black", highlightthickness=2)
-                text_label_MyP.create_image(88, 100, image=img_bg_txt)
-                text_label_MyP.create_text(80, 50, font=('Times', 10),
-                                           text=f"Type:{prod[2]}\nPrice:{prod[3]}\nStock:{prod[4]}")
-                text_label_MyP.pack(side='right')
-                frame_id = accounts_list[acc_index].my_products_frame.create_window(
-                    accounts_list[acc_index].my_prod_pos.X_POSITION,
-                    accounts_list[acc_index].my_prod_pos.Y_POSITION,
-                    width=WINDOW_WIDTH - 40,
-                    window=user_product_frame,
-                    height=100)
-                history_id_list.append(frame_id)
-                myproduct_img.pack(side='left')
+                    text_label_MyP = Canvas(user_product_frame, width=175, height=200, highlightcolor="black",
+                                            highlightbackground="black", highlightthickness=2)
+                    text_label_MyP.create_image(88, 100, image=img_bg_txt)
+                    text_label_MyP.create_text(80, 50, font=('Times', 10),
+                                               text=f"Type:{prod[2]}\nPrice:{prod[3]}\nStock:{prod[4]}")
+                    text_label_MyP.pack(side='right')
+                    frame_id = accounts_list[acc_index].my_products_frame.create_window(
+                        accounts_list[acc_index].my_prod_pos.X_POSITION,
+                        accounts_list[acc_index].my_prod_pos.Y_POSITION,
+                        width=WINDOW_WIDTH - 40,
+                        window=user_product_frame,
+                        height=100)
+                    history_id_list.append(frame_id)
+                    myproduct_img.pack(side='left')
 
-                # create binding function for background
-                user_product_frame.bind_all("<Configure>",
+                    # create binding function for background
+                    user_product_frame.bind_all("<Configure>",
+                                                lambda e: user_product_frame.configure(
+                                                    scrollregion=user_product_frame.bbox("all")))
+                    user_product_frame.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
+                    text_label_MyP.bind_all("<Configure>",
                                             lambda e: user_product_frame.configure(
                                                 scrollregion=user_product_frame.bbox("all")))
-                user_product_frame.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
-                text_label_MyP.bind_all("<Configure>",
-                                        lambda e: user_product_frame.configure(
-                                            scrollregion=user_product_frame.bbox("all")))
-                text_label_MyP.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
-                accounts_list[acc_index].myP_background.bind_all("<Configure>",
-                                                                 lambda e: user_product_frame.configure(
-                                                                     scrollregion=user_product_frame.bbox("all")))
-                accounts_list[acc_index].myP_background.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
-                myproduct_img.bind_all("<Configure>",
-                                       lambda e: user_product_frame.configure(
-                                           scrollregion=user_product_frame.bbox("all")))
-                myproduct_img.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
+                    text_label_MyP.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
+                    accounts_list[acc_index].myP_background.bind_all("<Configure>",
+                                                                     lambda e: user_product_frame.configure(
+                                                                         scrollregion=user_product_frame.bbox("all")))
+                    accounts_list[acc_index].myP_background.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
+                    myproduct_img.bind_all("<Configure>",
+                                           lambda e: user_product_frame.configure(
+                                               scrollregion=user_product_frame.bbox("all")))
+                    myproduct_img.bind("<MouseWheel>", accounts_list[acc_index].myP_frame_wheel)
 
-                accounts_list[acc_index].my_products_frame.bind_all("<Configure>",
-                                                                    lambda e: user_product_frame.configure(
-                                                                        scrollregion=user_product_frame.bbox("all")))
-                accounts_list[acc_index].my_products_frame.bind("<MouseWheel>",
-                                                                accounts_list[acc_index].myP_frame_wheel)
-                # add cart to user window
-                accounts_list[acc_index].my_prod_pos.SCROLL_Y_VAL_OF_PRDCTS += 120
-                accounts_list[acc_index].my_prod_pos.Y_POSITION += 120
-                update_scroll_Y(accounts_list[acc_index].my_products_frame,
-                                accounts_list[acc_index].my_prod_pos.SCROLL_Y_VAL_OF_PRDCTS)
-                # ==========================================================================================================================
-                show_inven_to_admin(img2, prod[2], prod[3], prod[4])
-                # ==========================================================================================================================
+                    accounts_list[acc_index].my_products_frame.bind_all("<Configure>",
+                                                                        lambda e: user_product_frame.configure(
+                                                                            scrollregion=user_product_frame.bbox("all")))
+                    accounts_list[acc_index].my_products_frame.bind("<MouseWheel>",
+                                                                    accounts_list[acc_index].myP_frame_wheel)
+                    # add cart to user window
+                    accounts_list[acc_index].my_prod_pos.SCROLL_Y_VAL_OF_PRDCTS += 120
+                    accounts_list[acc_index].my_prod_pos.Y_POSITION += 120
+                    update_scroll_Y(accounts_list[acc_index].my_products_frame,
+                                    accounts_list[acc_index].my_prod_pos.SCROLL_Y_VAL_OF_PRDCTS)
+                    # ==========================================================================================================================
+                    show_inven_to_admin(img2, prod[2], prod[3], prod[4])
+                    # ==========================================================================================================================
 
-            conn.commit()
+                conn.commit()
     prd_key += 1
     print("prd last ", prd_key)
 
@@ -2605,19 +2500,18 @@ search_frame_container.pack(side='bottom')
 
 Label(search_frame_container, width=WINDOW_WIDTH, height=490, image=user_frame_bg_img, anchor='s').pack(fill=BOTH,
                                                                                                         expand=True)
-
-srch_entry = Entry(search_frame, width=25,
+srch_img_btn  = create_img('donwloadimages/search_img.jpeg',260,180)
+srch_cons = search_frame.create_image(265,22,image=srch_img_btn)
+srch_entry = Entry(search_frame, width=21,
                    font=('Times', 12),
-                   relief='flat',
-                   highlightcolor="black",
-                   highlightthickness=1,
-                   highlightbackground='black')
-srch_entry.place(x=60, y=20)
+                   relief='flat')
+#srch_entry.place(x=60, y=20)
+search_frame.create_window(230,20,window=srch_entry)
 search_count_label = search_frame.create_text(23, 460, text="Item : 0", fill="white")
 search_img_2 = create_img('images/search logo.png', 15, 10)
 srch_btn = Button(search_frame, text="Search", command=search_type, relief='flat', image=search_img_2, compound='left',
                   bg='white')
-srch_btn.place(x=270, y=20)
+srch_btn.place(x=325, y=7)
 # ========================================================================================= PROFILE WINDOW FRAME
 
 profile_frame = Canvas(user_frame,
@@ -2636,7 +2530,7 @@ profile_pic = Label(profile_frame, width=160, height=190,
                     highlightthickness=2,
                     highlightbackground='black',
                     )
-profile_pic.place(x=125, y=70)
+profile_pic.place(x=123, y=70)
 
 user_information = profile_frame.create_text(205, 320, text='', font=("Times", 30, 'bold'))
 user_address = profile_frame.create_text(205, 350, text='', font=("Times", 20, 'bold'), fill="#100C08")
@@ -2895,13 +2789,7 @@ log_in_canvas.create_image(WINDOW_WIDTH - (log_bg_img.width() // 2), 300, image=
 pass_btn_config = log_in_canvas.create_image(txt_box_gap + (txt_bx.width() // 2) + 150, 325, image=show_pass_img)
 
 log_in_canvas.tag_bind(pass_btn_config, "<Button>", lambda event: show_password())
-
-switch = log_in_canvas.create_image(25, 25, image=sun_img)
-
-log_in_canvas.tag_bind(switch, "<Button>", lambda event: change_bg_color())
-
 ######## log in box background
-# log_in_canvas.create_image(227,300,image=log_outl)
 
 ######## create logo in log in box
 log_in_canvas.create_image((log0_login_gap_W + (logo_med.width() // 2)), 120, image=logo_med)
