@@ -442,18 +442,11 @@ class Products(Accounts):
         self.transaction_f = Canvas(accounts_list[self.product_index].mytransaction_frame)
         # trasaction history list
         # ============================================================ create seller profile frame
-        self.frame = Canvas(user_frame)
+        self.frame = Canvas(user_frame,width=250,height=330)
 
-        # self.button_exit_prof = Button(self.frame, command=self.profile_unview, text="X")
-
-        # self.info_label = Label(self.frame,
-        #                       text=f"Name:{self.get_user_name()}\nAge:{self.get_age()}\nAddress:{self.get_user_address()}")
-        # self.label.pack()
-        # self.info_label.pack()
-        # self.button_exit_prof.pack()
-        # ============================================================
-        # myproducts frame
         self.myproduct_container = None
+        self.frame.create_image(200,270,image=user_frame_bg_img)
+        self.frame.create_text(200,30,text="Seller",font=("Times",25,'bold'))
         # date delivever
         self.time_of_deliver = datetime.now().date().today() + timedelta(days=(int(_time.tm_wday) + 5))
 
@@ -539,7 +532,6 @@ class Products(Accounts):
             c.execute(delete)
             conn.commit()
             conn.close()
-            self.my_Pinfo.config(text=f"SOLD OUT")
             self.product_container.pack_forget()
             self.myproduct_container.pack_forget()
 
@@ -564,14 +556,14 @@ class Products(Accounts):
     def show_profile_frame(self, image, username, address):
         # self.label = Label(self.frame, image=self.id_pic)
         self.con = Canvas(self.frame, highlightbackground="black", highlightcolor="black", highlightthickness=2, bd=1,
-                          width=280, height=350)
+                          width=300, height=390)
         self.con.create_image(200, 280, image=wel_bg)
-        self.con.create_image(140, 100, image=image)
+        self.con.create_image(150, 140, image=image)
         self.back_to_btn = self.frame.create_image(20, 20, image=back_to_img)
         self.frame.tag_bind(self.back_to_btn, "<Button>", lambda event: self.profile_unview())  # back button
-        self.con.create_text(140, 210, font=("Monoscape", 20, "bold"), text=f"{username}")
-        self.con.create_text(170, 240, font=("Monoscape", 15, "bold"), text=f"{address}")
-        self.con.place(x=60, y=100)
+        self.con.create_text(155, 290, font=("Justify", 20, "bold"), text=f"{username}")
+        self.con.create_text(185, 310, font=("Justify", 15, "bold"), text=f"{address}")
+        self.con.place(x=45, y=80)
 
     def display_to_myproduct_frame(self):
         self.myproduct_container = Canvas(current_user().my_products_frame, width=WINDOW_WIDTH - 40)
@@ -2375,10 +2367,6 @@ buy_frame = Canvas(user_frame, highlightbackground="black",
                    height=500,
                    bg="white"
                    )
-# label = Label(buy_frame, text='BUY')
-# label.pack(side=TOP)
-# product_image_BF = None
-
 ##############
 buy_frame_bg_img = create_img('images/bgnanaman.jpg', 390, 510)
 # buy_frame.create_image(190,255,image=buy_frame_bg_img) #create background image of buyframe
@@ -2386,17 +2374,17 @@ buy_frame_bg_img = create_img('images/bgnanaman.jpg', 390, 510)
 quan_menu_img = create_img('images/txt-box.png', 190, 190)
 # buy_frame.create_image(270,270,image=quan_menu_img)
 
-product_info_BF = buy_frame.create_text(110, 310, text="", font=("Calibre", 10, "bold"),
+product_info_BF = buy_frame.create_text(115, 310, text="", font=("Times", 11, "bold"),
                                         fill="black")  # create text information
 ##############
 buy_btn_img = create_img('images/buy.png', 70, 55)  # image for buy button
 
 buy_button = buy_frame.create_image(290, 470, image=buy_btn_img)  # create button
 ##############
-prof_btn_img = create_img('images/user.png', 20, 20)  # image for buy button
+prof_btn_img = create_img('images/user.png', 21, 21)  # image for buy button
 
-view_profile_button = buy_frame.create_image(280, 310, image=prof_btn_img)  # create button
-buy_frame.create_text(280, 330, text="Profile", font=("Calibre", 6, "bold"),
+view_profile_button = buy_frame.create_image(285, 310, image=prof_btn_img)  # create button
+buy_frame.create_text(285, 330, text="Profile", font=("Justify", 7, "bold"),
                       fill="black")  # create text 'profile' label
 ##############
 product_picture = Label(buy_frame, highlightbackground="black", highlightcolor="black",
@@ -2409,11 +2397,11 @@ buy_frame.create_line(10, 280, 370, 280, width=2, fill="black")
 ############
 
 new_quan = IntVar()
-quan_menu = Spinbox(buy_frame, width=15,state="readonly")
-quan_menu.place(x=170, y=400)
+quan_menu = Spinbox(buy_frame, width=15,state="readonly",font=("Justify",10,'bold'))
+quan_menu.place(x=230, y=420)
 
 ############ payment text
-payment_txt = buy_frame.create_text(40, 470, text="Payment: 0")
+payment_txt = buy_frame.create_text(85, 470, text="Payment: 0",font=("Justify",11,'bold'))
 # buy_button.pack(side=BOTTOM)
 
 ########################## MENU WINDOW FRAME
@@ -2537,22 +2525,26 @@ types.place(x=185, y=120)
 
 upload_price = Entry(sell_container,
                      bd=0,
-                     highlightthickness=0,
-                     bg="#F3F2ED",
+                     highlightthickness=1,
+                     bg="#F3F2ED",highlightcolor='black', highlightbackground='black'
                      )
 upload_price.place(x=185, y=160)
 
 upload_stock = Entry(sell_container,
                      bd=0,
-                     highlightthickness=0,
+                     highlightthickness=1,
                      bg="#F3F2ED",
+                    highlightcolor='black',
+                     highlightbackground='black'
                      )
 upload_stock.place(x=185, y=200)
 
 upload_contact = Entry(sell_container,
                        bd=0,
-                       highlightthickness=0,
                        bg="#F3F2ED",
+                        highlightcolor='black',
+                       highlightbackground='black',
+                       highlightthickness=1
                        )
 upload_contact.place(x=185, y=240)
 
@@ -2638,8 +2630,8 @@ prof_background_img = create_img('images/profbg.jpg', 470, 610)
 profile_frame.create_image(205, 256, image=user_frame_bg_img)
 # bg_prof = Label(profile_frame, image=bg_2)
 # bg_prof.pack()
-profile_frame.create_line(50, 50, 350, 250, width=2)
-profile_pic = Label(profile_frame, width=150, height=175,
+profile_frame.create_line(50, 290, 350, 290, width=2)
+profile_pic = Label(profile_frame, width=160, height=190,
                     highlightcolor='black',
                     highlightthickness=2,
                     highlightbackground='black',
@@ -2758,9 +2750,13 @@ password_txt_box = sign_in_canvas.create_image(sign_txt_box_gap + (sign_txt_bx.w
 confirm_txt_box = sign_in_canvas.create_image(sign_txt_box_gap + (sign_txt_bx.width() // 2), 420, image=sign_txt_bx)
 
 # button to open id picture
-img_box = sign_in_canvas.create_image((sign_txt_box_gap + ((sign_txt_bx.width() // 2) - 80)), 460, image=sign_img_bx)
-sign_in_canvas.tag_bind(img_box, "<Button>", lambda event: open_id_image())
-
+open_img = create_img('donwloadimages/image (2).png',22,22)
+img_box = Button(sign_in_canvas,image=open_img,command=open_id_image,relief='flat',
+                 highlightcolor="black",
+                 highlightbackground="black",
+                 highlightthickness=1)
+sign_in_canvas.create_window(110,470,window=img_box)
+sign_in_canvas.create_text(159,470,text='Id picture',font=("Justify",8,'bold'))
 ############
 # logo
 # sign_in_canvas.create_image(220,50,image=logo_med)
